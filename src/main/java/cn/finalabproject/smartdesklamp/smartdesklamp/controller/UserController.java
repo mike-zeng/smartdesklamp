@@ -1,7 +1,6 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.controller;
 
-import cn.finalabproject.smartdesklamp.smartdesklamp.commen.RetJson;
-import cn.finalabproject.smartdesklamp.smartdesklamp.entity.UserInfoEntity;
+import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.EmailService;
@@ -16,7 +15,6 @@ import com.aliyuncs.exceptions.ClientException;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;

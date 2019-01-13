@@ -1,4 +1,4 @@
-package cn.finalabproject.smartdesklamp.smartdesklamp.commen;
+package cn.finalabproject.smartdesklamp.smartdesklamp.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
