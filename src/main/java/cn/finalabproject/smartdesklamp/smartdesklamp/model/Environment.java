@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Environment {
-    private int id;
+    private Integer id;
 
     private float brightness;
 

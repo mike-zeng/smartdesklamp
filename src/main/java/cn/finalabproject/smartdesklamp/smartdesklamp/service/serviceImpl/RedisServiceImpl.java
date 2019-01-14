@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 
@@ -78,5 +79,11 @@ public class RedisServiceImpl implements RedisService {
     @Override
     public void setbit(String key,long pos,boolean flag){
         redisTemplate.opsForValue().setBit(key,pos,flag);
+    }
+
+    @Override
+    public Set<String> sget(String key) {
+        Set<String> set=redisTemplate.opsForSet().members(key);
+        return set;
     }
 }

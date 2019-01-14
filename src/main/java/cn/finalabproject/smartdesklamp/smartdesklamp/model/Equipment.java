@@ -13,4 +13,6 @@ public class Equipment {
     private Integer kind;
 
     private String name;
+
+    private String macAddress;
 }

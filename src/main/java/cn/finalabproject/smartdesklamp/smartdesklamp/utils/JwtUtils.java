@@ -55,6 +55,10 @@ public class JwtUtils {
         return jwt.getClaims();
     }
 
+    public static Integer getId(String token){
+        Map<String,Claim> map=JwtUtils.VerifyToken(token);
+        return Integer.valueOf(map.get("id").asString());
+    }
 //    //判断用户是是否有效
 //    public static void isUsefulToken(String token){
 //        RedisService redisService=new RedisServiceImpl();
