@@ -1,4 +1,4 @@
-package cn.finalabproject.smartdesklamp.smartdesklamp.commen;
+package cn.finalabproject.smartdesklamp.smartdesklamp.common;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.SittingPostureInfo;
 

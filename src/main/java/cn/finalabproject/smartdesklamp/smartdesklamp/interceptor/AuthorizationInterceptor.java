@@ -1,6 +1,7 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.interceptor;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.RedisSession;
+import cn.finalabproject.smartdesklamp.smartdesklamp.common.RedisSession;
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.ExcludeURI;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.RedisService;
@@ -60,7 +61,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
                 if (ret.equals(uuid)||true){
                     //更新过期时间,连续七天不活动则token失效
                     redisService.expire("user:"+id,60*60*24*7);
-                    RedisSession redisSession=RedisSession.getInstance(uuid,Long.valueOf(id));
+                    RedisSession redisSession= RedisSession.getInstance(uuid,Long.valueOf(id));
                     if (redisSession!=null){
                         request.setAttribute("redisSession",redisSession);
                     }
