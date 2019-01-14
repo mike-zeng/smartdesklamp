@@ -1,6 +1,5 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl;
 
-import cn.finalabproject.smartdesklamp.smartdesklamp.entity.UserInfoEntity;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.UserInfoMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.UserMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
