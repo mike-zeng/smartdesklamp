@@ -1,8 +1,10 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.controller;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.Background;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
+import cn.finalabproject.smartdesklamp.smartdesklamp.service.BackgroundService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.EmailService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.RedisService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.UserService;
@@ -35,9 +37,10 @@ public class UserController {
     UserService userService;
     @Autowired
     RedisService redisService;
-
     @Autowired
     EmailService emailService;
+    @Autowired
+    BackgroundService backgroundService;
     //登入
     @RequestMapping("/login")
     public RetJson login(User user, HttpServletRequest request){
@@ -105,7 +108,7 @@ public class UserController {
     }
 
     //获取用户信息
-    @RequestMapping("/getUserinfo")
+    @RequestMapping("/getUserInfo")
     public RetJson getUserInfo(Integer id, HttpServletRequest request){
         UserInfo userInfo=userService.getUserInfo(id);
         if (userInfo==null){
@@ -118,7 +121,7 @@ public class UserController {
     }
 
     //修改用户信息
-    @RequestMapping("/alterUserinfo")
+    @RequestMapping("/alterUserInfo")
     public RetJson alterUserInfo(UserInfo userInfo, HttpServletRequest request){
         //将就一下
         if (!ValidatedUtil.validate(userInfo)){
@@ -138,6 +141,35 @@ public class UserController {
         Integer id= ((User)request.getAttribute("user")).getId();
         userService.saveUserHeadPortrait(multipartFile,id);
         return RetJson.succcess(null);
+    }
+
+    @RequestMapping("/uploadBackground")
+    public RetJson uploadUserBackground(@RequestParam("background") MultipartFile multipartFile,Integer flag, HttpServletRequest request){
+        Integer id= ((User)request.getAttribute("user")).getId();
+        Integer size = backgroundService.queryBackgrounds(id).length;
+        if(size >= 10){
+            return RetJson.fail(-1,"插入失败！");
+        }
+        Integer bid = userService.saveUserBackground(multipartFile,id,size + 1,flag);
+        return RetJson.succcess("bid",bid);
+    }
+
+    @RequestMapping("/alterBackground")
+    public RetJson alterUserBackground(Integer bid,HttpServletRequest request){
+        Integer id= ((User)request.getAttribute("user")).getId();
+        Background background = backgroundService.queryBackgroundByBid(bid);
+        if(!id.equals(background.getUid())){
+            return RetJson.fail(-1,"非法操作！");
+        }
+        userService.alterBackground(id,background.getImagePath());
+        return RetJson.succcess(null);
+    }
+
+    @RequestMapping("/queryBackgrounds")
+    public RetJson queryUserBackgrounds(HttpServletRequest request){
+        Integer id= ((User)request.getAttribute("user")).getId();
+        Background[] backgrounds = backgroundService.queryBackgrounds(id);
+        return RetJson.succcess("backgrounds",backgrounds);
     }
 
     //验证用户邮箱

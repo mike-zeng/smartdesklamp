@@ -15,4 +15,7 @@ public interface UserInfoMapper {
 
     @Update("update user_info set imagePath=#{imagePath} where id=#{id}")
     public Boolean alterHeadPortrait(@Param("id") Integer id, @Param("imagePath") String url);
+
+    @Update("update user_info set background_path=#{backgroundPath} where id=#{id}")
+    public boolean alterBackground(@Param("id") Integer id,@Param("backgroundPath") String backgroundPath);
 }

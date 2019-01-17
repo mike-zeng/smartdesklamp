@@ -1,7 +1,9 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl;
 
+import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.BackgroundMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.UserInfoMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.UserMapper;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.Background;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.UserService;
@@ -30,6 +32,8 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
     @Autowired
     private UserInfoMapper userInfoMapper;
+    @Autowired
+    BackgroundMapper backgroundMapper;
 
 
 
@@ -104,6 +108,10 @@ public class UserServiceImpl implements UserService {
         return userMapper.getUserByUserId(valueOf);
     }
 
+    @Override
+    public boolean alterBackground(Integer id, String backgroundPath) {
+        return userInfoMapper.alterBackground(id,backgroundPath);
+    }
 
     @Override
     public boolean saveUserHeadPortrait(MultipartFile multipartFile, Integer id) {
@@ -125,9 +133,47 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+    @Override
+    public Integer saveUserBackground(MultipartFile multipartFile, Integer id,Integer size,Integer flag) {
+        String username=userMapper.getUserByUserId(id).getUsername();
+        if (username==null){
+            return -1;
+        }
+        String url=null;
+        InputStream inputStream = null;
+        try {
+            inputStream=multipartFile.getInputStream();
+            url=saveBackground(inputStream,username,size);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        if (url!=null) {
+            Background background = new Background();
+            background.setImagePath(url);
+            background.setFlag(1);
+            background.setUid(id);
+            backgroundMapper.insertBackground(background);
+            return background.getBid();
+        }
+        return -1;
+    }
+
     private  String saveUserHeadPortrait(InputStream inputStream,String username){
         try {
             String url= COSUtils.addFile("head_portrait/"+username+"_headportrait",inputStream);
+            return url;
+        }finally {
+            try {
+                inputStream.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String saveBackground(InputStream inputStream,String username,Integer size){
+        try {
+            String url= COSUtils.addFile("head_portrait/"+ username +"_headportrait" + size,inputStream);
             return url;
         }finally {
             try {
