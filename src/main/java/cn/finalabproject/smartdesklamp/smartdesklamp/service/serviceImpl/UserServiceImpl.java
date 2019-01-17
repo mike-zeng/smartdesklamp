@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -134,7 +135,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Integer saveUserBackground(MultipartFile multipartFile, Integer id,Integer size,Integer flag) {
+    public Integer saveUserBackground(MultipartFile multipartFile, Integer id,Integer flag) {
         String username=userMapper.getUserByUserId(id).getUsername();
         if (username==null){
             return -1;
@@ -143,7 +144,7 @@ public class UserServiceImpl implements UserService {
         InputStream inputStream = null;
         try {
             inputStream=multipartFile.getInputStream();
-            url=saveBackground(inputStream,username,size);
+            url=saveBackground(inputStream,username);
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -171,9 +172,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private String saveBackground(InputStream inputStream,String username,Integer size){
+    private String saveBackground(InputStream inputStream,String username){
         try {
-            String url= COSUtils.addFile("head_portrait/"+ username +"_headportrait" + size,inputStream);
+            String url= COSUtils.addFile("background/"+ username + "_"+UUID.randomUUID(),inputStream);
             return url;
         }finally {
             try {
@@ -196,6 +197,4 @@ public class UserServiceImpl implements UserService {
         }
         return randomString.toString();
     }
-
-
 }

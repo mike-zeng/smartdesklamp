@@ -10,8 +10,8 @@ public interface BackgroundMapper {
     @Options(useGeneratedKeys = true,keyProperty = "bid",keyColumn = "bid")
     public boolean insertBackground(Background background);
 
-    @Delete("delete from background where uid=#{uid}")
-    public boolean deleteBackground(@Param("bid")Integer bid);
+    @Delete("delete from background where bid=#{bid} and uid=#{uid}")
+    public boolean deleteBackground(@Param("uid")Integer uid,@Param("bid")Integer bid);
 
     @Select("select * from background where flag=0 or uid=#{uid}")
     @Results({

@@ -52,7 +52,6 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
             Map<String, Claim> map= JwtUtils.VerifyToken(token);
             String uuid=map.get("uuid").asString();
             String id=map.get("id").asString();
-
             //判断token是否有效
             if (uuid!=null&&id!=null&&redisService.exists("user:"+id)){
                 request.setAttribute("user",userService.getUserByUserId(Integer.valueOf(id)));

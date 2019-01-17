@@ -33,6 +33,7 @@ import java.util.UUID;
  */
 @RestController
 public class UserController {
+    private static final Integer MAX_SIZE=5*1024*1024;
     @Autowired
     UserService userService;
     @Autowired
@@ -107,23 +108,31 @@ public class UserController {
         return RetJson.fail(-1, "验证码不正确！");
     }
 
-    //获取用户信息
+    /**
+     * 获取用户信息
+     * @param id 用户id
+     * @param request
+     * @return
+     */
     @RequestMapping("/getUserInfo")
     public RetJson getUserInfo(Integer id, HttpServletRequest request){
         UserInfo userInfo=userService.getUserInfo(id);
         if (userInfo==null){
             return RetJson.fail(-1,"获取用户信息失败");
         }else{
-            Map<String,Object> map=new LinkedHashMap<>();
-            map.put("userinfo",userInfo);
-            return RetJson.succcess(map);
+
+            return RetJson.succcess("userInfo",userInfo);
         }
     }
 
-    //修改用户信息
+    /**
+     * 修改用户信息
+     * @param userInfo 用户信息，字段为：
+     * @param request
+     * @return
+     */
     @RequestMapping("/alterUserInfo")
     public RetJson alterUserInfo(UserInfo userInfo, HttpServletRequest request){
-        //将就一下
         if (!ValidatedUtil.validate(userInfo)){
             return RetJson.fail(-1,"请检查参数");
         }
@@ -133,27 +142,68 @@ public class UserController {
         return RetJson.succcess(null);
     }
 
-//    ===========================以下接口没做测试=========================
-    //修改用户头像,涉及到文件上传,单独拿出来
+    /**
+     * 修改用户头像
+     * @param multipartFile 头像图片文件，不超过5m
+     * @param request
+     * @return
+     */
     @RequestMapping("/alterHeadPortrait")
     public RetJson alterHeadPortrait(@RequestParam("photo") MultipartFile multipartFile, HttpServletRequest request){
-        //图片校验
+        if (multipartFile.getSize()>MAX_SIZE){
+            return RetJson.fail(-1,"文件大小超过5兆!");
+        }
+        //图片校验。。。。留空
         Integer id= ((User)request.getAttribute("user")).getId();
         userService.saveUserHeadPortrait(multipartFile,id);
         return RetJson.succcess(null);
     }
 
+    /**
+     *上传用户背景图片
+     * @param multipartFile 背景图片文件，不超过5m大小
+     * @param request
+     * @return
+     */
     @RequestMapping("/uploadBackground")
-    public RetJson uploadUserBackground(@RequestParam("background") MultipartFile multipartFile,Integer flag, HttpServletRequest request){
+    public RetJson uploadUserBackground(@RequestParam("background") MultipartFile multipartFile, HttpServletRequest request){
+        if (multipartFile.getSize()>MAX_SIZE){
+            return RetJson.fail(-1,"文件大小超过5兆!");
+        }
+        //图片校验。。。。留空
+
+        Integer flag=1;
         Integer id= ((User)request.getAttribute("user")).getId();
         Integer size = backgroundService.queryBackgrounds(id).length;
-        if(size >= 10){
+        //用户最多可以上传五张背景图片
+        if(size >= 5){
             return RetJson.fail(-1,"插入失败！");
         }
-        Integer bid = userService.saveUserBackground(multipartFile,id,size + 1,flag);
+        Integer bid = userService.saveUserBackground(multipartFile,id,flag);
         return RetJson.succcess("bid",bid);
     }
 
+    /**
+     * 删除自定义背景
+     * @param bid 背景id
+     * @param request
+     * @return
+     */
+    @RequestMapping("/deleteBackground")
+    public RetJson deleteBackground(Integer bid,HttpServletRequest request){
+        Integer uid=((User)request.getAttribute("user")).getId();
+        if (backgroundService.deleteBackground(uid,bid)){
+            return RetJson.fail(-1,"删除失败!");
+        }
+        return RetJson.succcess(null);
+    }
+
+    /**
+     * 修改用户的背景
+     * @param bid
+     * @param request
+     * @return
+     */
     @RequestMapping("/alterBackground")
     public RetJson alterUserBackground(Integer bid,HttpServletRequest request){
         Integer id= ((User)request.getAttribute("user")).getId();
@@ -165,6 +215,11 @@ public class UserController {
         return RetJson.succcess(null);
     }
 
+    /**
+     * 获取所有背景
+     * @param request
+     * @return
+     */
     @RequestMapping("/queryBackgrounds")
     public RetJson queryUserBackgrounds(HttpServletRequest request){
         Integer id= ((User)request.getAttribute("user")).getId();
@@ -172,7 +227,12 @@ public class UserController {
         return RetJson.succcess("backgrounds",backgrounds);
     }
 
-    //验证用户邮箱
+    /**
+     * 绑定邮箱
+     * @param email 邮箱地址
+     * @param code 邮箱验证码
+     * @return
+     */
     @RequestMapping("/bindMailbox")
     public RetJson bindMailbox(String email,String code){
         String redisCode=(String) redisService.get(email);
@@ -182,9 +242,13 @@ public class UserController {
         return RetJson.fail(-1,"邮箱验证码错误");
     }
 
-    //获取邮箱验证码
+    /**
+     * 获取邮箱验证码
+     * @param email 邮箱地址
+     */
     @RequestMapping("/getEmailCode")
-    public void getEmailCode(@RequestParam("email") String email){
+    public RetJson getEmailCode(@RequestParam("email") String email){
         emailService.sentVerificationCode(email);
+        return RetJson.succcess(null);
     }
 }

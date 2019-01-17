@@ -36,6 +36,6 @@ public class COSUtils {
                 e.printStackTrace();
             }
         }
-        return "https://smartmeetingroom-1257009269.cos.ap-guangzhou.myqcloud.com/"+key;
+        return "https://smartdesklamp-1257009269.cos.ap-guangzhou.myqcloud.com/"+key;
     }
 }

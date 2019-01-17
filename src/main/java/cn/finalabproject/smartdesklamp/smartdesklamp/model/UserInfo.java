@@ -24,9 +24,9 @@ public class UserInfo {
     @Email
     private String email;
 
-    private String imagePath;
+    private String region;
 
-    private String name;
+    private String imagePath;
 
     private String nickName;
 

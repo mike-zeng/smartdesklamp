@@ -9,8 +9,7 @@ public interface UserInfoMapper {
     @Select("select * from user_info where id=#{id}")
     public UserInfo getUserInfoById(@Param("id") Integer id);
 
-    @Update({"update user_info set phoneNum=#{phoneNum},email=#{email},sex=#{sex},name=#{name},nickName=#{nickName}" +
-            " where id=#{id}"})
+    @Update({"update user_info set sex=#{sex},nickName=#{nickName},region=#{region} where id=#{id}"})
     public void alterUserInfo(UserInfo userInfo);
 
     @Update("update user_info set imagePath=#{imagePath} where id=#{id}")

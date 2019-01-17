@@ -35,8 +35,8 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.*;
 
-@ServerEndpoint("/getMessageServer/{token}")
 @Component
+@ServerEndpoint("/getMessageServer/{token}")
 public class MessageSocketServer {
 
     @Autowired

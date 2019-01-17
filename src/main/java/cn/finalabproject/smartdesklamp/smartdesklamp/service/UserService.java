@@ -14,14 +14,13 @@ public interface UserService {
 
     public Boolean logout();
 
-    //注册一个普通账号，供app用户使用
     public void register(User user);
 
     public boolean saveUserHeadPortrait(MultipartFile multipartFile, Integer id);
 
     public boolean alterUserInfo(UserInfo userInfo);
 
-    public Integer saveUserBackground(MultipartFile multipartFile, Integer id,Integer size,Integer flag);
+    public Integer saveUserBackground(MultipartFile multipartFile, Integer id,Integer flag);
 
     public UserInfo getUserInfo(Integer id);
 
