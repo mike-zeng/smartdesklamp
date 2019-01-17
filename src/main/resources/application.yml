@@ -40,5 +40,6 @@ my:
       - /getcode
       - /error
       - /alterorganization
-
-#邮箱服务
+server:
+  port: 9095
+#

@@ -192,7 +192,7 @@ public class UserController {
     @RequestMapping("/deleteBackground")
     public RetJson deleteBackground(Integer bid,HttpServletRequest request){
         Integer uid=((User)request.getAttribute("user")).getId();
-        if (backgroundService.deleteBackground(uid,bid)){
+        if (!backgroundService.deleteBackground(uid,bid)){
             return RetJson.fail(-1,"删除失败!");
         }
         return RetJson.succcess(null);
