@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Field;
 import java.util.UUID;
 
 /**
@@ -88,7 +89,12 @@ public class UserController {
         return RetJson.fail(-1,message);
     }
 
-    //注册
+    /**
+     * 注册
+     * @param user
+     * @param code
+     * @return
+     */
     @RequestMapping("/register")
     public RetJson userRegister(User user, String code) {
         if (!ValidatedUtil.validate(user)) {
@@ -134,8 +140,10 @@ public class UserController {
         if (!ValidatedUtil.validate(userInfo)){
             return RetJson.fail(-1,"请检查参数");
         }
-        Integer id= ((User)request.getAttribute("user")).getId();
+        Integer id = ((User)request.getAttribute("user")).getId();
         userInfo.setId(id);
+        UserInfo pastUserInfo = userService.getUserInfo(id);
+        copyFieldValue(userInfo,pastUserInfo);
         userService.alterUserInfo(userInfo);
         return RetJson.succcess(null);
     }
@@ -248,5 +256,18 @@ public class UserController {
     public RetJson getEmailCode(@RequestParam("email") String email){
         emailService.sentVerificationCode(email);
         return RetJson.succcess(null);
+    }
+
+    public  void copyFieldValue(UserInfo userInfo,UserInfo pastUserInfo){
+        for(Field f : userInfo.getClass().getDeclaredFields()){
+            f.setAccessible(true);
+            try {
+                if(f.get(userInfo) == null&&f.get(pastUserInfo) != null){
+                    f.set(userInfo,f.get(pastUserInfo));
+                }
+            }catch (IllegalAccessException e){
+                e.printStackTrace();
+            }
+        }
     }
 }
