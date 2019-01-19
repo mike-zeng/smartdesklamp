@@ -2,12 +2,10 @@ package cn.finalabproject.smartdesklamp.smartdesklamp.controller;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.Background;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.SignInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
-import cn.finalabproject.smartdesklamp.smartdesklamp.service.BackgroundService;
-import cn.finalabproject.smartdesklamp.smartdesklamp.service.EmailService;
-import cn.finalabproject.smartdesklamp.smartdesklamp.service.RedisService;
-import cn.finalabproject.smartdesklamp.smartdesklamp.service.UserService;
+import cn.finalabproject.smartdesklamp.smartdesklamp.service.*;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.GenerateVerificationCode;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.JwtUtils;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.MoblieMessageUtil;
@@ -17,6 +15,7 @@ import com.aliyuncs.exceptions.ClientException;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -41,6 +41,8 @@ public class UserController {
     EmailService emailService;
     @Autowired
     BackgroundService backgroundService;
+    @Autowired
+    SignInfoService signInfoService;
     //登入
     @RequestMapping("/login")
     public RetJson login(User user, HttpServletRequest request){
@@ -257,6 +259,27 @@ public class UserController {
         emailService.sentVerificationCode(email);
         return RetJson.succcess(null);
     }
+
+    @RequestMapping("/signIn")
+    public RetJson userSignIn(HttpServletRequest request){
+        User user = (User)request.getAttribute("user");
+        Integer uid = user.getId();
+        java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
+        if(signInfoService.querySignInfo(uid,date) != null){
+            return RetJson.fail(-1,"您已签到！");
+        }
+        signInfoService.insertSignInfo(new SignInfo(null,uid,date));
+        return RetJson.succcess(null);
+    }
+
+    @RequestMapping("/getSignInfos")
+    public RetJson getUserSignInfos(@DateTimeFormat(pattern = "yyyy-MM-dd") Date beginDate, @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, HttpServletRequest request){
+        User user = (User)request.getAttribute("user");
+        Integer uid = user.getId();
+        SignInfo[] signInfos = signInfoService.querySignInfos(uid,new java.sql.Date(beginDate.getTime()),new java.sql.Date(endDate.getTime()));
+        return RetJson.succcess("0",signInfos);
+    }
+
 
     public  void copyFieldValue(UserInfo userInfo,UserInfo pastUserInfo){
         for(Field f : userInfo.getClass().getDeclaredFields()){
