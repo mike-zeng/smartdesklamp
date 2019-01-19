@@ -6,6 +6,9 @@ import cn.finalabproject.smartdesklamp.smartdesklamp.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
 @Service
 public class TaskServiceImpl implements TaskService {
 
@@ -18,8 +21,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public boolean deleteTaskById(Integer id) {
-        return taskMapper.deleteTaskById(id);
+    public boolean deleteTaskById(Integer uid,Integer tid) {
+        return taskMapper.deleteTaskById(uid,tid);
     }
 
     @Override
@@ -28,8 +31,13 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Task queryTask(Integer id) {
-        return taskMapper.queryTask(id);
+    public Task queryTask(Integer uid,Integer tid) {
+        return taskMapper.queryTask(uid,tid);
+    }
+
+    @Override
+    public boolean completeTask(Integer uid, Integer tid) {
+        return taskMapper.completeTask(uid,tid);
     }
 
     @Override
