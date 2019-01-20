@@ -13,4 +13,6 @@ public interface SittingPostureService {
     public boolean updatePosture(SittingPostureInfo sittingPostureInfo);
 
     public SittingPostureInfo[] queryPostures(@Param("beginTime") Timestamp beginTime, @Param("endTime") Timestamp endTime);
+
+
 }

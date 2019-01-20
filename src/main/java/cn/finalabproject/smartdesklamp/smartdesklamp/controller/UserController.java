@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -56,7 +58,11 @@ public class UserController {
                 UUID uuid=UUID.randomUUID();
                 String token= JwtUtils.createToken(uuid,user.getId().toString());
                 redisService.set("user:"+user.getId(),uuid.toString(),60*60*24*7);
-                return RetJson.succcess("token",token);
+
+                Map<String,String> map=new HashMap<>();
+                map.put("id",user.getId().toString());
+                map.put("token",token);
+                return RetJson.succcess(map);
             }catch (Exception e){
                 e.printStackTrace();
                 return RetJson.fail(-1,"登入失败，服务端错误");
@@ -102,15 +108,15 @@ public class UserController {
         if (!ValidatedUtil.validate(user)) {
             return RetJson.fail(-1, "请检查参数");
         }
-//        if (redisService.exists(user.getUsername()) && redisService.get(user.getUsername()).equals(code)) {
-            if (true) {
+        if (redisService.exists(user.getUsername()) && redisService.get(user.getUsername()).equals(code)) {
+//            if (true) {
                 if (userService.findUserByUserName(user.getUsername()) == null) {
                     userService.register(user);
                     return RetJson.succcess(null);
                 }
                 return RetJson.fail(-1, "用户已存在！");
-            }
-//        }
+//            }
+        }
         return RetJson.fail(-1, "验证码不正确！");
     }
 
@@ -207,7 +213,7 @@ public class UserController {
     }
 
     /**
-     * 修改用户的背景
+     * 设置用户的背景
      * @param bid
      * @param request
      * @return
@@ -260,6 +266,11 @@ public class UserController {
         return RetJson.succcess(null);
     }
 
+    /**
+     * 签到
+     * @param request
+     * @return
+     */
     @RequestMapping("/signIn")
     public RetJson userSignIn(HttpServletRequest request){
         User user = (User)request.getAttribute("user");
@@ -272,6 +283,13 @@ public class UserController {
         return RetJson.succcess(null);
     }
 
+    /**
+     * 获取签到信息
+     * @param beginDate 开始日期
+     * @param endDate   结束日期
+     * @param request   请求
+     * @return
+     */
     @RequestMapping("/getSignInfos")
     public RetJson getUserSignInfos(@DateTimeFormat(pattern = "yyyy-MM-dd") Date beginDate, @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, HttpServletRequest request){
         User user = (User)request.getAttribute("user");

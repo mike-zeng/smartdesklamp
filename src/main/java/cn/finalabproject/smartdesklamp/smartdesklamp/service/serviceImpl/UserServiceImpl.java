@@ -89,12 +89,28 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    /**
+     * 修改 性别 昵称 年龄 地区 信息
+     * @param userInfo
+     * @return
+     */
     @Override
     public boolean alterUserInfo(UserInfo userInfo) {
-        //判断是否为本人操作
+        UserInfo d=userInfoMapper.getUserInfoById(userInfo.getId());
+        if (userInfo.getSex()==null){
+            userInfo.setSex(d.getSex());
+        }
+        if (userInfo.getAge()==null){
+            userInfo.setAge(d.getAge());
+        }
+        if (userInfo.getNickName()==null){
+            userInfo.setNickName(d.getNickName());
+        }
+        if (userInfo.getRegion()==null){
+            userInfo.setRegion(d.getRegion());
+        }
         userInfoMapper.alterUserInfo(userInfo);
         return true;
-
     }
 
     @Override
