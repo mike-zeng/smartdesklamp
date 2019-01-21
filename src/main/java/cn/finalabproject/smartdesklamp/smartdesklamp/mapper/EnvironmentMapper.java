@@ -20,8 +20,8 @@ public interface EnvironmentMapper {
     @Delete("delete from environment where id=#{id}")
     public boolean deleteEnvironment(@Param("id") Integer id);
 
-    @Select("select * from environment where time between #{lowTime} and #{highTime}")
-    public Environment[] queryEnvironmentsBtTime(@Param("lowTime") Timestamp lowTime,@Param("highTime") Timestamp highTime);
+    @Select("select * from environment where (time between #{lowTime} and #{highTime}) and eid=#{eid}")
+    public Environment[] queryEnvironmentsBtTime(@Param("lowTime") Timestamp lowTime,@Param("highTime") Timestamp highTime,Integer eid);
 
     @Select("select * from environment where id=#{id}")
     public Environment queryEnvironmentById(@Param("id") Integer id);

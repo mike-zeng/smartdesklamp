@@ -1,7 +1,6 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.controller;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.Environment;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.SignInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
@@ -10,13 +9,11 @@ import cn.finalabproject.smartdesklamp.smartdesklamp.utils.GenerateVerificationC
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.JwtUtils;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.MoblieMessageUtil;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.ValidatedUtil;
-import cn.finalabproject.smartdesklamp.smartdesklamp.vo.EnvironmentInfoViewObject;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.aliyuncs.exceptions.ClientException;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -219,54 +215,6 @@ public class UserController {
         signInfoService.insertSignInfo(new SignInfo(null,uid,date));
         return RetJson.succcess(null);
     }
-
-    /**
-     * 获取签到信息
-     * @param beginDate 开始日期
-     * @param endDate   结束日期
-     * @param request   请求
-     * @return
-     */
-    @RequestMapping("/getSignInfos")
-    public RetJson getUserSignInfos(@DateTimeFormat(pattern = "yyyy-MM-dd") Date beginDate, @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, HttpServletRequest request){
-        User user = (User)request.getAttribute("user");
-        Integer uid = user.getId();
-        SignInfo[] signInfos = signInfoService.querySignInfos(uid,new java.sql.Date(beginDate.getTime()),new java.sql.Date(endDate.getTime()));
-        return RetJson.succcess("0",signInfos);
-    }
-
-    @RequestMapping("/getCurrentInfo")
-    public RetJson getCurrentInfo(Integer eid,HttpServletRequest request){
-        User user = (User)request.getAttribute("user");
-        Integer uid = user.getId();
-        Integer workTime = null;
-        Integer equipmentUserId = equipmentService.getUserId(eid);
-        if(equipmentUserId == null){
-            return RetJson.fail(-1,"请先绑定设备！");
-        }
-        if(uid.intValue() != equipmentUserId.intValue()){
-            return RetJson.fail(-1,"非法操作！");
-        }
-        EnvironmentInfoViewObject environmentInfoViewObject = new EnvironmentInfoViewObject();
-        Environment environment = environmentService.queryCurrentEnvironmentInfo(eid);
-        Integer musicId = equipmentService.getCurrentMusicId(eid);
-        Integer count = sittingPostureService.getCountByDate(new Date());
-        if(count == null){
-            workTime = 0;
-        }else{
-            workTime = count * 2;
-        }
-        if(environment != null){
-            environmentInfoViewObject.setBrightness(environment.getBrightness());
-            environmentInfoViewObject.setHumidity(environment.getHumidity());
-            environmentInfoViewObject.setNoise(environment.getNoise());
-            environmentInfoViewObject.setTemperature(environment.getTemperature());
-        }
-        environmentInfoViewObject.setWorkTime(workTime);
-        environmentInfoViewObject.setMusicId(musicId);
-        return RetJson.succcess("environmentInfoViewObject", environmentInfoViewObject);
-    }
-
 
     public  void copyFieldValue(UserInfo userInfo,UserInfo pastUserInfo){
         for(Field f : userInfo.getClass().getDeclaredFields()){

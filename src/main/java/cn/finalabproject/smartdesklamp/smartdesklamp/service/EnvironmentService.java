@@ -11,7 +11,7 @@ public interface EnvironmentService {
 
     public boolean deleteEnvironment(Integer equipmentId);
 
-    public Environment[] queryEnvironmentsByTime(Timestamp lowTime,Timestamp highTime);
+    public Environment[] queryEnvironmentsByTime(Timestamp lowTime,Timestamp highTime,Integer eid);
 
     public Environment queryEnvironmentById(Integer equipmentId);
 

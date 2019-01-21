@@ -28,8 +28,8 @@ public class EnvironmentServiceImpl implements EnvironmentService {
     }
 
     @Override
-    public Environment[] queryEnvironmentsByTime(Timestamp lowTime, Timestamp highTime) {
-        return environmentMapper.queryEnvironmentsBtTime(lowTime,highTime);
+    public Environment[] queryEnvironmentsByTime(Timestamp lowTime, Timestamp highTime,Integer eid) {
+        return environmentMapper.queryEnvironmentsBtTime(lowTime,highTime,eid);
     }
 
     @Override

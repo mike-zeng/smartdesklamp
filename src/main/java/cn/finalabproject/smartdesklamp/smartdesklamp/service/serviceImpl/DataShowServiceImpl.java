@@ -1,13 +1,19 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl;
 
+import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.EnvironmentMapper;
+import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.EquipmentMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.SittingPostureMapper;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.Environment;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.SittingPostureInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.DataShowService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.vo.BaseDataViewObject;
+import cn.finalabproject.smartdesklamp.smartdesklamp.vo.EnvironmentInfoViewObject;
+import cn.finalabproject.smartdesklamp.smartdesklamp.vo.SpecificEnvironmentDataViewObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +22,10 @@ import java.util.Map;
 public class DataShowServiceImpl implements DataShowService {
     @Autowired
     SittingPostureMapper sittingPostureMapper;
+    @Autowired
+    EnvironmentMapper environmentMapper;
+    @Autowired
+    EquipmentMapper equipmentMapper;
 
     @Override
     public BaseDataViewObject getBaseData(Integer uid) {
@@ -65,5 +75,69 @@ public class DataShowServiceImpl implements DataShowService {
 
         //返回数据
         return baseDataViewObject;
+    }
+
+    @Override
+    public EnvironmentInfoViewObject getEnvironmentData(Integer eid) {
+        Integer workTime = null;
+        EnvironmentInfoViewObject environmentInfoViewObject = new EnvironmentInfoViewObject();
+        Environment environment = environmentMapper.queryCurrentEnvironmentInfo(eid);
+        Integer musicId = equipmentMapper.getCurrentMusicId(eid);
+        Integer count = sittingPostureMapper.getCountByDate(new Date());
+        if(count == null){
+            workTime = 0;
+        }else{
+            workTime = count * 2;
+        }
+        if(environment != null){
+            environmentInfoViewObject.setBrightness(environment.getBrightness());
+            environmentInfoViewObject.setHumidity(environment.getHumidity());
+            environmentInfoViewObject.setNoise(environment.getNoise());
+            environmentInfoViewObject.setTemperature(environment.getTemperature());
+        }
+        environmentInfoViewObject.setWorkTime(workTime);
+        environmentInfoViewObject.setMusicId(musicId);
+        return environmentInfoViewObject;
+    }
+
+    @Override
+    public SpecificEnvironmentDataViewObject getSpecificData(Date date,Integer eid){
+        Float[] temperature = new Float[24];
+        Float[] humidity = new Float[24];
+        Float[] noise = new Float[24];
+        Float[] brightness = new Float[24];
+        SpecificEnvironmentDataViewObject specificEnvironmentDataViewObject = new SpecificEnvironmentDataViewObject();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        Integer currentHour = calendar.get(Calendar.HOUR_OF_DAY);
+        calendar.setTime(date);
+        //从0时到当前的时刻，求出每个时刻的平均值
+        for(int i = 0;i < currentHour;i++){
+            brightness[i] = 0f;
+            humidity[i] = 0f;
+            noise[i] = 0f;
+            temperature[i] = 0f;
+            Timestamp beginDate = new Timestamp(calendar.getTime().getTime());
+            calendar.add(Calendar.HOUR,1);
+            Timestamp endDate = new Timestamp(calendar.getTime().getTime());
+            Environment[] environments = environmentMapper.queryEnvironmentsBtTime(beginDate,endDate,eid);
+            if(environments != null){
+                for(Integer j = 0;j < environments.length;j++){
+                    brightness[i] += environments[j].getBrightness();
+                    humidity[i] += environments[j].getHumidity();
+                    noise[i] += environments[i].getNoise();
+                    temperature[i] += environments[i].getTemperature();
+                }
+                brightness[i] /= environments.length;
+                humidity[i] /= environments.length;
+                noise[i] /= environments.length;
+                temperature[i] /= environments.length;
+            }
+            specificEnvironmentDataViewObject.setBrightness(brightness);
+            specificEnvironmentDataViewObject.setHumidity(humidity);
+            specificEnvironmentDataViewObject.setNoise(noise);
+            specificEnvironmentDataViewObject.setTemperature(temperature);
+        }
+        return specificEnvironmentDataViewObject;
     }
 }
