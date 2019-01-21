@@ -22,6 +22,8 @@ public interface UserService {
 
     public Integer saveUserBackground(MultipartFile multipartFile, Integer id,Integer flag);
 
+    public Integer saveUserMusic(MultipartFile multipartFile,Integer id,String musicName);
+
     public UserInfo getUserInfo(Integer id);
 
     User getUserByUserId(Integer valueOf);

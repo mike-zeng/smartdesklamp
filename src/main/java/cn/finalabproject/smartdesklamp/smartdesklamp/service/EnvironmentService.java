@@ -14,4 +14,6 @@ public interface EnvironmentService {
     public Environment[] queryEnvironmentsByTime(Timestamp lowTime,Timestamp highTime);
 
     public Environment queryEnvironmentById(Integer equipmentId);
+
+    public Environment queryCurrentEnvironmentInfo(Integer eid);
 }

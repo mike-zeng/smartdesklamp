@@ -19,6 +19,12 @@ public interface BackgroundMapper {
     })
     public Background[] queryBackgrounds(@Param("uid") Integer uid);
 
+    @Select("select * from background where uid=#{uid}")
+    @Results({
+            @Result(property = "imagePath",column = "image_path")
+    })
+    public Background[] queryUserBackgrounds(@Param("uid") Integer uid);//只查询用户自己上传的背景
+
     @Select("select * from background where bid=#{bid}")
     @Results({
             @Result(property = "imagePath",column = "image_path")

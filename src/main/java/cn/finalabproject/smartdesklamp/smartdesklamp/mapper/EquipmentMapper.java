@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.*;
 public interface EquipmentMapper {
     @Insert({"insert into equipment(kind,name,mac_address) values(#{kind},#{name},#{macAddress})"})
     @Options(useGeneratedKeys = true,keyColumn = "equipment_id",keyProperty = "equipmentId")
-    public int InserEquipment(Equipment equipment);
+    public int InsertEquipment(Equipment equipment);
 
     @Delete("delete from equipment where equipment_id=#{equipmentId}")
     public boolean deleteEquipment(@Param("equipmentId")Integer equipmentId);
@@ -18,7 +18,20 @@ public interface EquipmentMapper {
     @Select("select * from equipment where equipment_id=#{equipmentId}")
     @Results({
             @Result(property = "equipmentId",column = "equipment_id"),
-            @Result(property = "macAddress",column = "mac_address")
+            @Result(property = "macAddress",column = "mac_address"),
+            @Result(property = "musicId",column = "music_id")
     })
     public Equipment queryEquipmentById(@Param("equipmentId") Integer equipmentId);
+
+    @Update("update equipment set uid=#{uid} where equipment_id=#{equipmentId}")
+    public boolean updateUserId(@Param("uid") Integer uid,Integer equipmentId);
+
+    @Select("select uid from equipment where equipment_id=#{equipmentId}")
+    public Integer getUserId(@Param("equipmentId") Integer equipmentId);
+
+    @Update("update equipment set music_id=#{musicId} where equipment_id=#{eid}")
+    public boolean alterCurrentMusicId(@Param("eid")Integer eid,@Param("musicId")Integer musicId);
+
+    @Select("select music_id from equipment where equipment_id=#{eid}")
+    public Integer getCurrentMusicId(@Param("eid") Integer eid);
 }

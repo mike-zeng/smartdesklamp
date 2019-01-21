@@ -36,18 +36,21 @@ import java.sql.Timestamp;
 import java.util.*;
 
 @Component
-@ServerEndpoint("/getMessageServer/{token}")
+@ServerEndpoint("/getMessageServer/{token}/{eid}/{macAddress}")
 public class MessageSocketServer {
 
     @Autowired
     RedisService redisService;
 
     private static HashMap<Integer,MessageSocketServer> webSocketMap = new HashMap<>();
+    private static HashMap<Integer,MessageSocketServer> webSocketHardwareMap = new HashMap<>();
     private static HashMap<Integer,List<String>> waitToSent=new HashMap<>();
+    private static HashMap<Integer,List<String>> HardwareWaitToSent=new HashMap<>();
 
     private Session session;
     private Integer id;
     private UserInfo userInfo;
+    private Integer eid;
 
     //发送给所有的用户
     public static void sentAll(String message){
@@ -74,36 +77,66 @@ public class MessageSocketServer {
                     list.add(message);
                 }
                 continue;
+            }else{
+                messageSocketServer.session.getAsyncRemote().sendText(message);
             }
-            messageSocketServer.session.getAsyncRemote().sendText(message);
         }
     }
 
-
+    public static void sentToHardWare(Integer eid,String message) {
+        MessageSocketServer messageSocketServer = webSocketHardwareMap.get(eid);
+        if (messageSocketServer == null) {
+            List<String> list = waitToSent.get(eid);
+            if (list==null){
+                waitToSent.put(eid,new LinkedList<>());
+            }else {
+                list.add(message);
+            }
+        }else{
+            messageSocketServer.session.getAsyncRemote().sendText(message);
+        }
+    }
     //接受新的连接，并判断权限是否足够
     @OnOpen
-    public void onOpen(Session session,@PathParam("token") String token) throws IOException {
-        this.session=session;
-        Integer id= JwtUtils.getId(token);
-        if (id!=null){
-            this.id=id;
-            webSocketMap.put(id,this);//有新的连接，加入map中
-            //判断有没有该用户的信息，如果有就发送
-            List<String> list=waitToSent.get(id);//获取信息
-            String message;
-            if (list!=null){
-                for (int i=0;i<list.size();i++){
-                    message=list.get(i);
-                    if (message!=null){
-                        session.getAsyncRemote().sendText(message);
-                    }
-                    list.remove(i);
-                }
+    public void onOpen(Session session,@PathParam("token") String token,@PathParam("eid")Integer eid,@PathParam("macAddress")String macAddress) throws IOException {
+        this.session = session;
+        List<String> list = null;
+        //如果是台灯进行连接
+        if (token.endsWith("null")) {
+//            EquipmentService equipmentService = SpringUtil.getBean(EquipmentServiceImpl.class);
+//            String encriptString = Md5Utils.MD5Encode(macAddress, "utf-8", false);
+//            String tempMacAddress = equipmentService.queryEquipmentById(eid).getMacAddress();
+            //检测传过来的mac地址是否正确
+//            if (tempMacAddress == null || !encriptString.endsWith(tempMacAddress)) {
+//                return;
+//            } else {
+                this.eid = eid;
+                webSocketHardwareMap.put(eid, this);
+                //判断有没有该台灯的信息，如果有就发送
+                list = HardwareWaitToSent.get(id);//获取信息
+//            }
+        }else{
+            Integer id = JwtUtils.getId(token);
+            if(id != null){
+                this.id = id;
+                webSocketMap.put(id, this);//有新的连接，加入map中
+                //判断有没有该用户的信息，如果有就发送
+                list = waitToSent.get(id);//获取信息
+            }else {
+                session.close();
             }
-            System.out.println("有新的连接"+id);
-        }else {
-            session.close();
         }
+        String message;
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                message = list.get(i);
+                if (message != null) {
+                    session.getAsyncRemote().sendText(message);
+                }
+                list.remove(i);
+            }
+        }
+        System.out.println("有新的连接" + id);
     }
 
     @OnClose
@@ -116,25 +149,24 @@ public class MessageSocketServer {
     //接受来自客户端的消息
     @OnMessage
     public void onMessage(String message) throws IOException {
-        EquipmentService equipmentService = SpringUtil.getBean(EquipmentServiceImpl.class);
-        EnvironmentService environmentService = SpringUtil.getBean(EnvironmentServiceImpl.class);
-        SittingPostureService sittingPostureService = SpringUtil.getBean(SittingPostureServiceImpl.class);
-        Base64.Decoder decoder = Base64.getDecoder();
-        Message m=null;
+            EquipmentService equipmentService = SpringUtil.getBean(EquipmentServiceImpl.class);
+            EnvironmentService environmentService = SpringUtil.getBean(EnvironmentServiceImpl.class);
+            SittingPostureService sittingPostureService = SpringUtil.getBean(SittingPostureServiceImpl.class);
+            Base64.Decoder decoder = Base64.getDecoder();
+            Message m = null;
 
-        ObjectMapper objectMapper=new ObjectMapper();
-        try {
-            m=objectMapper.readValue(message,Message.class);
-        }catch (Exception e){
-            e.printStackTrace();
-            return;
-        }
-
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                m = objectMapper.readValue(message, Message.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
 
         Integer eid = m.getEquipmentId();
-        String encriptString = Md5Utils.MD5Encode(m.getMacAddress(),"utf-8",false);
+        String encryptString = Md5Utils.MD5Encode(m.getMacAddress(),"utf-8",false);
         //检测传过来的mac地址是否正确
-        if(!encriptString.endsWith(equipmentService.queryEquipmentById(eid).getMacAddress())) {
+        if(!encryptString.endsWith(equipmentService.queryEquipmentById(eid).getMacAddress())) {
             return;
         }
         Environment environment = new Environment(null,m.getBrightness(),m.getNoise(),m.getTemperature(),m.getHumidity(),m.getTime(),m.getEquipmentId());

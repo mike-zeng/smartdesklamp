@@ -1,10 +1,8 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.controller;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.Background;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.SignInfo;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
+import cn.finalabproject.smartdesklamp.smartdesklamp.entity.LampEnvironmentInfoEntity;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.*;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.*;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.GenerateVerificationCode;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.JwtUtils;
@@ -16,6 +14,7 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -34,15 +35,19 @@ import java.util.UUID;
 public class UserController {
     private static final Integer MAX_SIZE=5*1024*1024;
     @Autowired
-    UserService userService;
+    private UserService userService;
     @Autowired
-    RedisService redisService;
+    private RedisService redisService;
     @Autowired
-    EmailService emailService;
+    private EmailService emailService;
     @Autowired
-    BackgroundService backgroundService;
+    private SignInfoService signInfoService;
     @Autowired
-    SignInfoService signInfoService;
+    private EquipmentService equipmentService;
+    @Autowired
+    private EnvironmentService environmentService;
+    @Autowired
+    private SittingPostureService sittingPostureService;
     //登入
     @RequestMapping("/login")
     public RetJson login(User user, HttpServletRequest request){
@@ -69,7 +74,7 @@ public class UserController {
     //获取手机验证码
     @RequiresAuthentication
     @RequestMapping("/getcode")
-    public RetJson sendIdentifyingCode(@Length(max = 11, min = 11, message = "手机号的长度必须是11位.")@RequestParam(value = "phonenumber") String phoneNumber){
+    public RetJson sendIdentifyingCode(@Validated @Length(max = 11, min = 11, message = "手机号的长度必须是11位.")@RequestParam(value = "phonenumber") String phoneNumber){
         if ((userService.findUserByUserName(phoneNumber)!=null)){
             return RetJson.fail(-1,"该用户已经注册");
         }
@@ -168,74 +173,6 @@ public class UserController {
     }
 
     /**
-     *上传用户背景图片
-     * @param multipartFile 背景图片文件，不超过5m大小
-     * @param request
-     * @return
-     */
-    @RequestMapping("/uploadBackground")
-    public RetJson uploadUserBackground(@RequestParam("background") MultipartFile multipartFile, HttpServletRequest request){
-        if (multipartFile.getSize()>MAX_SIZE){
-            return RetJson.fail(-1,"文件大小超过5兆!");
-        }
-        //图片校验。。。。留空
-
-        Integer flag=1;
-        Integer id= ((User)request.getAttribute("user")).getId();
-        Integer size = backgroundService.queryBackgrounds(id).length;
-        //用户最多可以上传五张背景图片
-        if(size >= 5){
-            return RetJson.fail(-1,"插入失败！");
-        }
-        Integer bid = userService.saveUserBackground(multipartFile,id,flag);
-        return RetJson.succcess("bid",bid);
-    }
-
-    /**
-     * 删除自定义背景
-     * @param bid 背景id
-     * @param request
-     * @return
-     */
-    @RequestMapping("/deleteBackground")
-    public RetJson deleteBackground(Integer bid,HttpServletRequest request){
-        Integer uid=((User)request.getAttribute("user")).getId();
-        if (!backgroundService.deleteBackground(uid,bid)){
-            return RetJson.fail(-1,"删除失败!");
-        }
-        return RetJson.succcess(null);
-    }
-
-    /**
-     * 修改用户的背景
-     * @param bid
-     * @param request
-     * @return
-     */
-    @RequestMapping("/alterBackground")
-    public RetJson alterUserBackground(Integer bid,HttpServletRequest request){
-        Integer id= ((User)request.getAttribute("user")).getId();
-        Background background = backgroundService.queryBackgroundByBid(bid);
-        if(!id.equals(background.getUid())){
-            return RetJson.fail(-1,"非法操作！");
-        }
-        userService.alterBackground(id,background.getImagePath());
-        return RetJson.succcess(null);
-    }
-
-    /**
-     * 获取所有背景
-     * @param request
-     * @return
-     */
-    @RequestMapping("/queryBackgrounds")
-    public RetJson queryUserBackgrounds(HttpServletRequest request){
-        Integer id= ((User)request.getAttribute("user")).getId();
-        Background[] backgrounds = backgroundService.queryBackgrounds(id);
-        return RetJson.succcess("backgrounds",backgrounds);
-    }
-
-    /**
      * 绑定邮箱
      * @param email 邮箱地址
      * @param code 邮箱验证码
@@ -280,6 +217,46 @@ public class UserController {
         return RetJson.succcess("0",signInfos);
     }
 
+    @RequestMapping("/getCurrentInfo")
+    public RetJson getCurrentInfo(Integer eid,HttpServletRequest request){
+        User user = (User)request.getAttribute("user");
+        Integer uid = user.getId();
+        Integer workTime = null;
+        Integer equipmentUserId = equipmentService.getUserId(eid);
+        if(equipmentUserId == null){
+            return RetJson.fail(-1,"请先绑定设备！");
+        }
+        if(uid.intValue() != equipmentUserId.intValue()){
+            return RetJson.fail(-1,"非法操作！");
+        }
+        LampEnvironmentInfoEntity lampEnvironmentInfoEntity = new LampEnvironmentInfoEntity();
+        Environment environment = environmentService.queryCurrentEnvironmentInfo(eid);
+        Integer musicId = equipmentService.getCurrentMusicId(eid);
+        //获取今天凌晨和明天凌晨两个时间点
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        Timestamp beginDate = new Timestamp(calendar.getTime().getTime());
+        calendar.add(Calendar.DATE,1);
+        Timestamp endDate = new Timestamp(calendar.getTime().getTime());
+        SittingPostureInfo[] sittingPostureInfos = sittingPostureService.queryPostures(beginDate,endDate,uid);
+        if(sittingPostureInfos == null){
+            workTime = 0;
+        }else{
+            workTime = sittingPostureInfos.length * 2;
+        }
+        if(environment != null){
+            lampEnvironmentInfoEntity.setBrightness(environment.getBrightness());
+            lampEnvironmentInfoEntity.setHumidity(environment.getHumidity());
+            lampEnvironmentInfoEntity.setNoise(environment.getNoise());
+            lampEnvironmentInfoEntity.setTemperature(environment.getTemperature());
+        }
+        lampEnvironmentInfoEntity.setWorkTime(workTime);
+        lampEnvironmentInfoEntity.setMusicId(musicId);
+        return RetJson.succcess("lampEnvironmentInfoEntity",lampEnvironmentInfoEntity);
+    }
 
     public  void copyFieldValue(UserInfo userInfo,UserInfo pastUserInfo){
         for(Field f : userInfo.getClass().getDeclaredFields()){

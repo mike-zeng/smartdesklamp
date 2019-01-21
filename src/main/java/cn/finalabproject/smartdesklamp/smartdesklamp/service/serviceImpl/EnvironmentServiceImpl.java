@@ -36,4 +36,9 @@ public class EnvironmentServiceImpl implements EnvironmentService {
     public Environment queryEnvironmentById(Integer id) {
         return environmentMapper.queryEnvironmentById(id);
     }
+
+    @Override
+    public Environment queryCurrentEnvironmentInfo(Integer eid) {
+        return environmentMapper.queryCurrentEnvironmentInfo(eid);
+    }
 }

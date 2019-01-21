@@ -1,5 +1,6 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl;
 
+import cn.finalabproject.smartdesklamp.smartdesklamp.WebSocket.MessageSocketServer;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.EquipmentMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.Equipment;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.EquipmentService;
@@ -13,7 +14,7 @@ public class EquipmentServiceImpl implements EquipmentService {
 
     @Override
     public int InserEquipment(Equipment equipment) {
-        return equipmentMapper.InserEquipment(equipment);
+        return equipmentMapper.InsertEquipment(equipment);
     }
 
     @Override
@@ -29,5 +30,35 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Override
     public Equipment queryEquipmentById(Integer id) {
         return equipmentMapper.queryEquipmentById(id);
+    }
+
+    @Override
+    public boolean updateUserId(Integer uid, Integer equipmentId) {
+        return equipmentMapper.updateUserId(uid,equipmentId);
+    }
+
+    @Override
+    public Integer getUserId(Integer equipmentId) {
+        return equipmentMapper.getUserId(equipmentId);
+    }
+
+    @Override
+    public void switchMode(Integer type,Integer eid) {
+        MessageSocketServer.sentToHardWare(eid,"Switch-" + type);
+    }
+
+    @Override
+    public void adjustBrightness(Integer brightness,Integer eid) {
+        MessageSocketServer.sentToHardWare(eid,"adjust-" + brightness);
+    }
+
+    @Override
+    public boolean alterCurrentMusicId(Integer eid, Integer musicId) {
+        return equipmentMapper.alterCurrentMusicId(eid,musicId);
+    }
+
+    @Override
+    public Integer getCurrentMusicId(Integer eid) {
+        return equipmentMapper.getCurrentMusicId(eid);
     }
 }

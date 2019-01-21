@@ -17,6 +17,6 @@ public interface SittingPostureMapper {
     @Update("update sitting_posture set uid=#{uid},status=#{status},time=#{time}")
     public boolean updatePosture(SittingPostureInfo sittingPostureInfo);
 
-    @Select("select * from sitting_posture where time between #{beginTime} and #{endTime}")
-    public SittingPostureInfo[] queryPostures(@Param("beginTime") Timestamp beginTime,@Param("endTime") Timestamp endTime);
+    @Select("select * from sitting_posture where (time between #{beginTime} and #{endTime}) and uid=#{uid}")
+    public SittingPostureInfo[] queryPostures(@Param("beginTime") Timestamp beginTime,@Param("endTime") Timestamp endTime,@Param("uid") Integer uid);
 }

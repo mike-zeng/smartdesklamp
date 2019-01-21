@@ -15,4 +15,8 @@ public class Equipment {
     private String name;
 
     private String macAddress;
+
+    private Integer uid;
+
+    private Integer musicId;
 }

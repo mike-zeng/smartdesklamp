@@ -1,9 +1,11 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.BackgroundMapper;
+import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.MusicMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.UserInfoMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.UserMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.Background;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.Music;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.UserService;
@@ -34,8 +36,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserInfoMapper userInfoMapper;
     @Autowired
-    BackgroundMapper backgroundMapper;
-
+    private BackgroundMapper backgroundMapper;
+    @Autowired
+    private MusicMapper musicMapper;
 
 
     @Override
@@ -124,7 +127,9 @@ public class UserServiceImpl implements UserService {
         String url=null;
         try {
             inputStream=multipartFile.getInputStream();
-            url=saveUserHeadPortrait(inputStream,username);
+            url = uploadFileAndGetUrl(inputStream,"head_portrait/"+username+"_headportrait");
+            //写了一个通用函数
+            //url=saveUserHeadPortrait(inputStream,username);
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -144,7 +149,9 @@ public class UserServiceImpl implements UserService {
         InputStream inputStream = null;
         try {
             inputStream=multipartFile.getInputStream();
-            url=saveBackground(inputStream,username);
+            url = uploadFileAndGetUrl(inputStream,"background/"+ username + "_"+UUID.randomUUID());
+            //写了通用的函数
+            //url=saveBackground(inputStream,username);
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -159,9 +166,34 @@ public class UserServiceImpl implements UserService {
         return -1;
     }
 
-    private  String saveUserHeadPortrait(InputStream inputStream,String username){
+    @Override
+    public Integer saveUserMusic(MultipartFile multipartFile,Integer id,String musicName) {
+        String username = userMapper.getUserByUserId(id).getUsername();
+        String url=null;
+        InputStream inputStream = null;
+        if (username==null){
+            return -1;
+        }
         try {
-            String url= COSUtils.addFile("head_portrait/"+username+"_headportrait",inputStream);
+            inputStream=multipartFile.getInputStream();
+            url = uploadFileAndGetUrl(inputStream,"music/"+ username + "_musicName_"+UUID.randomUUID() + musicName);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        if(url!=null){
+            Music music = new Music();
+            music.setUid(id);
+            music.setMusicUrl(url);
+            music.setMusicName(musicName);
+            musicMapper.insertMusic(music);
+            return music.getId();
+        }
+        return -1;
+    }
+
+    private String uploadFileAndGetUrl(InputStream inputStream,String key){
+        try {
+            String url= COSUtils.addFile(key,inputStream);
             return url;
         }finally {
             try {
@@ -172,18 +204,31 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private String saveBackground(InputStream inputStream,String username){
-        try {
-            String url= COSUtils.addFile("background/"+ username + "_"+UUID.randomUUID(),inputStream);
-            return url;
-        }finally {
-            try {
-                inputStream.close();
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
+//    private  String saveUserHeadPortrait(InputStream inputStream,String username){
+//        try {
+//            String url= COSUtils.addFile("head_portrait/"+username+"_headportrait",inputStream);
+//            return url;
+//        }finally {
+//            try {
+//                inputStream.close();
+//            }catch (Exception e){
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+//
+//    private String saveBackground(InputStream inputStream,String username){
+//        try {
+//            String url= COSUtils.addFile("background/"+ username + "_"+UUID.randomUUID(),inputStream);
+//            return url;
+//        }finally {
+//            try {
+//                inputStream.close();
+//            }catch (Exception e){
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     public String produceSalt()
     {

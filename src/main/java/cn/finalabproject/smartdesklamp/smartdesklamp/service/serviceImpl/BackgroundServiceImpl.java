@@ -9,11 +9,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class BackgroundServiceImpl implements BackgroundService {
     @Autowired
-    BackgroundMapper backgroundMapper;
+    private BackgroundMapper backgroundMapper;
     @Override
     public boolean insertBackground(Background background) {
-        Background[] backgrounds = backgroundMapper.queryBackgrounds(background.getUid());
-        if(backgrounds.length < 10){
+        Background[] backgrounds = backgroundMapper.queryUserBackgrounds(background.getUid());
+        //用户只能上传5张图片
+        if(backgrounds.length < 5){
             backgroundMapper.insertBackground(background);
             return true;
         }
@@ -38,5 +39,10 @@ public class BackgroundServiceImpl implements BackgroundService {
     @Override
     public Background queryBackgroundByBid(Integer bid) {
         return backgroundMapper.queryBackgroundByBid(bid);
+    }
+
+    @Override
+    public Background[] queryUserBackgrounds(Integer uid) {
+        return backgroundMapper.queryUserBackgrounds(uid);
     }
 }
