@@ -1,20 +1,22 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.controller;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
-import cn.finalabproject.smartdesklamp.smartdesklamp.entity.LampEnvironmentInfoEntity;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.*;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.Environment;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.SignInfo;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.*;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.GenerateVerificationCode;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.JwtUtils;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.MoblieMessageUtil;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.ValidatedUtil;
+import cn.finalabproject.smartdesklamp.smartdesklamp.vo.EnvironmentInfoViewObject;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.aliyuncs.exceptions.ClientException;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,9 +24,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
-import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -61,7 +63,11 @@ public class UserController {
                 UUID uuid=UUID.randomUUID();
                 String token= JwtUtils.createToken(uuid,user.getId().toString());
                 redisService.set("user:"+user.getId(),uuid.toString(),60*60*24*7);
-                return RetJson.succcess("token",token);
+
+                Map<String,String> map=new HashMap<>();
+                map.put("id",user.getId().toString());
+                map.put("token",token);
+                return RetJson.succcess(map);
             }catch (Exception e){
                 e.printStackTrace();
                 return RetJson.fail(-1,"登入失败，服务端错误");
@@ -74,7 +80,7 @@ public class UserController {
     //获取手机验证码
     @RequiresAuthentication
     @RequestMapping("/getcode")
-    public RetJson sendIdentifyingCode(@Validated @Length(max = 11, min = 11, message = "手机号的长度必须是11位.")@RequestParam(value = "phonenumber") String phoneNumber){
+    public RetJson sendIdentifyingCode(@Length(max = 11, min = 11, message = "手机号的长度必须是11位.")@RequestParam(value = "phonenumber") String phoneNumber){
         if ((userService.findUserByUserName(phoneNumber)!=null)){
             return RetJson.fail(-1,"该用户已经注册");
         }
@@ -107,15 +113,15 @@ public class UserController {
         if (!ValidatedUtil.validate(user)) {
             return RetJson.fail(-1, "请检查参数");
         }
-//        if (redisService.exists(user.getUsername()) && redisService.get(user.getUsername()).equals(code)) {
-            if (true) {
-                if (userService.findUserByUserName(user.getUsername()) == null) {
-                    userService.register(user);
-                    return RetJson.succcess(null);
-                }
-                return RetJson.fail(-1, "用户已存在！");
+        if (redisService.exists(user.getUsername()) && redisService.get(user.getUsername()).equals(code)) {
+//            if (true) {
+            if (userService.findUserByUserName(user.getUsername()) == null) {
+                userService.register(user);
+                return RetJson.succcess(null);
             }
-//        }
+            return RetJson.fail(-1, "用户已存在！");
+//            }
+        }
         return RetJson.fail(-1, "验证码不正确！");
     }
 
@@ -197,6 +203,11 @@ public class UserController {
         return RetJson.succcess(null);
     }
 
+    /**
+     * 签到
+     * @param request
+     * @return
+     */
     @RequestMapping("/signIn")
     public RetJson userSignIn(HttpServletRequest request){
         User user = (User)request.getAttribute("user");
@@ -209,6 +220,13 @@ public class UserController {
         return RetJson.succcess(null);
     }
 
+    /**
+     * 获取签到信息
+     * @param beginDate 开始日期
+     * @param endDate   结束日期
+     * @param request   请求
+     * @return
+     */
     @RequestMapping("/getSignInfos")
     public RetJson getUserSignInfos(@DateTimeFormat(pattern = "yyyy-MM-dd") Date beginDate, @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, HttpServletRequest request){
         User user = (User)request.getAttribute("user");
@@ -229,34 +247,26 @@ public class UserController {
         if(uid.intValue() != equipmentUserId.intValue()){
             return RetJson.fail(-1,"非法操作！");
         }
-        LampEnvironmentInfoEntity lampEnvironmentInfoEntity = new LampEnvironmentInfoEntity();
+        EnvironmentInfoViewObject environmentInfoViewObject = new EnvironmentInfoViewObject();
         Environment environment = environmentService.queryCurrentEnvironmentInfo(eid);
         Integer musicId = equipmentService.getCurrentMusicId(eid);
-        //获取今天凌晨和明天凌晨两个时间点
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        Timestamp beginDate = new Timestamp(calendar.getTime().getTime());
-        calendar.add(Calendar.DATE,1);
-        Timestamp endDate = new Timestamp(calendar.getTime().getTime());
-        SittingPostureInfo[] sittingPostureInfos = sittingPostureService.queryPostures(beginDate,endDate,uid);
-        if(sittingPostureInfos == null){
+        Integer count = sittingPostureService.getCountByDate(new Date());
+        if(count == null){
             workTime = 0;
         }else{
-            workTime = sittingPostureInfos.length * 2;
+            workTime = count * 2;
         }
         if(environment != null){
-            lampEnvironmentInfoEntity.setBrightness(environment.getBrightness());
-            lampEnvironmentInfoEntity.setHumidity(environment.getHumidity());
-            lampEnvironmentInfoEntity.setNoise(environment.getNoise());
-            lampEnvironmentInfoEntity.setTemperature(environment.getTemperature());
+            environmentInfoViewObject.setBrightness(environment.getBrightness());
+            environmentInfoViewObject.setHumidity(environment.getHumidity());
+            environmentInfoViewObject.setNoise(environment.getNoise());
+            environmentInfoViewObject.setTemperature(environment.getTemperature());
         }
-        lampEnvironmentInfoEntity.setWorkTime(workTime);
-        lampEnvironmentInfoEntity.setMusicId(musicId);
-        return RetJson.succcess("lampEnvironmentInfoEntity",lampEnvironmentInfoEntity);
+        environmentInfoViewObject.setWorkTime(workTime);
+        environmentInfoViewObject.setMusicId(musicId);
+        return RetJson.succcess("environmentInfoViewObject", environmentInfoViewObject);
     }
+
 
     public  void copyFieldValue(UserInfo userInfo,UserInfo pastUserInfo){
         for(Field f : userInfo.getClass().getDeclaredFields()){

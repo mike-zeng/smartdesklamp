@@ -1,4 +1,4 @@
-package cn.finalabproject.smartdesklamp.smartdesklamp.entity;
+package cn.finalabproject.smartdesklamp.smartdesklamp.vo;
 
 import lombok.*;
 
@@ -7,7 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class LampEnvironmentInfoEntity {
+//EnvironmentInfoViewObject
+public class EnvironmentInfoViewObject {
 
     private float brightness;
 

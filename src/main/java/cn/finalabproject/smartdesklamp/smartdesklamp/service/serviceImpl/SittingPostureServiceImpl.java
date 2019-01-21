@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Service
 public class SittingPostureServiceImpl implements SittingPostureService {
@@ -32,5 +33,10 @@ public class SittingPostureServiceImpl implements SittingPostureService {
     @Override
     public SittingPostureInfo[] queryPostures(Timestamp beginTime, Timestamp endTime,Integer uid) {
         return sittingPostureMapper.queryPostures(beginTime,endTime,uid);
+    }
+
+    @Override
+    public int getCountByDate(Date date) {
+        return sittingPostureMapper.getCountByDate(date);
     }
 }

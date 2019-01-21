@@ -4,6 +4,7 @@ import cn.finalabproject.smartdesklamp.smartdesklamp.model.SittingPostureInfo;
 import org.apache.ibatis.annotations.*;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Mapper
 public interface SittingPostureMapper {
@@ -19,4 +20,7 @@ public interface SittingPostureMapper {
 
     @Select("select * from sitting_posture where (time between #{beginTime} and #{endTime}) and uid=#{uid}")
     public SittingPostureInfo[] queryPostures(@Param("beginTime") Timestamp beginTime,@Param("endTime") Timestamp endTime,@Param("uid") Integer uid);
+
+    @Select("select count(id) from sitting_posture where to_days(time)=to_days(#{date})")
+    public int getCountByDate(Date date);
 }
