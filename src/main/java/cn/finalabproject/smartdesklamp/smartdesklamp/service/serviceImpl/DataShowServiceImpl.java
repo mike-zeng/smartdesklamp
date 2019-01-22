@@ -1,14 +1,13 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl;
 
+import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.DataStatisticsMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.EnvironmentMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.EquipmentMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.SittingPostureMapper;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.Environment;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.SittingPostureInfo;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.*;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.DataShowService;
-import cn.finalabproject.smartdesklamp.smartdesklamp.vo.BaseDataViewObject;
-import cn.finalabproject.smartdesklamp.smartdesklamp.vo.EnvironmentInfoViewObject;
-import cn.finalabproject.smartdesklamp.smartdesklamp.vo.SpecificEnvironmentDataViewObject;
+import cn.finalabproject.smartdesklamp.smartdesklamp.utils.CalculateUtil;
+import cn.finalabproject.smartdesklamp.smartdesklamp.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +25,8 @@ public class DataShowServiceImpl implements DataShowService {
     EnvironmentMapper environmentMapper;
     @Autowired
     EquipmentMapper equipmentMapper;
+    @Autowired
+    DataStatisticsMapper dataStatisticsMapper;
 
     @Override
     public BaseDataViewObject getBaseData(Integer uid) {
@@ -139,5 +140,79 @@ public class DataShowServiceImpl implements DataShowService {
             specificEnvironmentDataViewObject.setTemperature(temperature);
         }
         return specificEnvironmentDataViewObject;
+    }
+
+    @Override
+    public SittingPostureViewObject getSittingPostureData(Integer uid, Date date) {
+        SittingPostureStatistics data=dataStatisticsMapper.querySittingPostureStatistics(uid,date);
+        Map<Integer,Integer> map=new HashMap<>();
+        int[] book=new int[7];
+        book[0]=data.getT0();
+        book[1]=data.getT1();
+        book[2]=data.getT2();
+        book[3]=data.getT3();
+        book[4]=data.getT4();
+        book[5]=data.getT5();
+        book[6]=data.getT6();
+
+        map= CalculateUtil.getPosturesMap(book);
+        double accuracy=CalculateUtil.getAccuracy(book);
+        double score=CalculateUtil.calculateScoreByPostures(book);
+        int grade=CalculateUtil.getGrade(score);
+        SittingPostureViewObject vo=new SittingPostureViewObject(map,accuracy,score,grade);
+        return vo;
+    }
+
+    @Override
+    public StudyTimeViewObject getStudyTimeData(Integer uid, Date date) {
+
+        StudyTimeStatistics[] data=dataStatisticsMapper.queryStudyTimeStatistics(uid,date);
+
+        int[] time=new int[7];
+        int sum=0;
+        for (int i=0;i<data.length;i++){
+            time[i]=data[i].getTotalTime();
+            sum+=data[i].getTotalTime();
+        }
+
+        int grade=sum/150+1;
+        if (grade>10){
+            grade=10;
+        }
+        StudyTimeViewObject vo=new StudyTimeViewObject(time,sum,sum/7.0,grade);
+        return vo;
+    }
+
+    @Override
+    public MarkDataViewObject getMarkData(Integer uid,Date date) {
+        PostureScoreStatistics[] data=dataStatisticsMapper.queryPostureScoreStatistics(uid,date);
+        double[] scores=new double[7];
+        double sum=0;
+        for (int i=0;i<data.length;i++){
+            scores[i]=data[i].getScore();
+            sum+=scores[i];
+        }
+        double variance=CalculateUtil.getVariance(scores);
+        int grade=0;
+        MarkDataViewObject vo=new MarkDataViewObject(scores,sum/7,variance,grade);
+        return vo;
+    }
+
+    @Override
+    public FocusViewObject getFocusData(Integer uid,Date date) {
+        FocusStatistics[] data=dataStatisticsMapper.queryFoucsStatistics(uid,date);
+        double[] scores=new double[7];
+        double sum=0;
+        for (int i=0;i<data.length;i++){
+            scores[i]=data[i].getFocusScore();
+            sum+=scores[i];
+        }
+
+        double average=sum/7;
+        double variance=0;
+        int grade=0;
+
+        FocusViewObject vo=new FocusViewObject(scores,average,variance,grade);
+        return vo;
     }
 }

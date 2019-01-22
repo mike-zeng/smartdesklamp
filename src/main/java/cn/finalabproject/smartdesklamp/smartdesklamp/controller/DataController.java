@@ -4,9 +4,7 @@ import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.SignInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.*;
-import cn.finalabproject.smartdesklamp.smartdesklamp.vo.BaseDataViewObject;
-import cn.finalabproject.smartdesklamp.smartdesklamp.vo.EnvironmentInfoViewObject;
-import cn.finalabproject.smartdesklamp.smartdesklamp.vo.SpecificEnvironmentDataViewObject;
+import cn.finalabproject.smartdesklamp.smartdesklamp.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -78,6 +76,35 @@ public class DataController {
         }
         SpecificEnvironmentDataViewObject specificEnvironmentDataViewObject = dataShowService.getSpecificData(date,eid);
         return RetJson.succcess("specificData",specificEnvironmentDataViewObject);
+    }
+
+    @RequestMapping("/getSittingPostureData")
+    public RetJson getSittingPostureData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date, HttpServletRequest request){
+        Integer uid=((User)request.getAttribute("user")).getId();
+        SittingPostureViewObject sittingPostureViewObject=dataShowService.getSittingPostureData(uid,date);
+        return RetJson.succcess("sittingPostureData",sittingPostureViewObject);
+    }
+
+    @RequestMapping("/getMarkData")
+    public RetJson getMarkData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date, HttpServletRequest request){
+        Integer uid=((User)request.getAttribute("user")).getId();
+        MarkDataViewObject markDataViewObject=dataShowService.getMarkData(uid,date);
+        return RetJson.succcess("markData",markDataViewObject);
+    }
+
+    @RequestMapping("/getStudyTimeData")
+    public RetJson getStudyTimeData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date,HttpServletRequest request){
+        Integer uid=((User)request.getAttribute("user")).getId();
+        StudyTimeViewObject studyTimeViewObject=dataShowService.getStudyTimeData(uid,date);
+        return RetJson.succcess("studyTimeData",studyTimeViewObject);
+    }
+
+
+    @RequestMapping("/getFocusData")
+    public RetJson getFocusData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date,HttpServletRequest request){
+        Integer uid=((User)request.getAttribute("user")).getId();
+        FocusViewObject focusViewObject=dataShowService.getFocusData(uid,date);
+        return RetJson.succcess("focusData",focusViewObject);
     }
 
 }
