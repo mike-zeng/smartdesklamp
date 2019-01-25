@@ -14,12 +14,15 @@ import com.aliyuncs.exceptions.ClientException;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,15 +43,9 @@ public class UserController {
     private EmailService emailService;
     @Autowired
     private SignInfoService signInfoService;
-    @Autowired
-    private EquipmentService equipmentService;
-    @Autowired
-    private EnvironmentService environmentService;
-    @Autowired
-    private SittingPostureService sittingPostureService;
     //登入
     @RequestMapping("/login")
-    public RetJson login(User user, HttpServletRequest request){
+    public RetJson login(@Valid User user, HttpServletRequest request){
         if (!ValidatedUtil.validate(user)){
             return RetJson.fail(-1,"登入失败，请检查用户名或密码");
         }
@@ -76,7 +73,7 @@ public class UserController {
     //获取手机验证码
     @RequiresAuthentication
     @RequestMapping("/getcode")
-    public RetJson sendIdentifyingCode(@Length(max = 11, min = 11, message = "手机号的长度必须是11位.")@RequestParam(value = "phonenumber") String phoneNumber){
+    public RetJson sendIdentifyingCode(@Validated @Length(max = 11, min = 11, message = "手机号的长度必须是11位.")@RequestParam(value = "phonenumber") String phoneNumber){
         if ((userService.findUserByUserName(phoneNumber)!=null)){
             return RetJson.fail(-1,"该用户已经注册");
         }
@@ -105,7 +102,7 @@ public class UserController {
      * @return
      */
     @RequestMapping("/register")
-    public RetJson userRegister(User user, String code) {
+    public RetJson userRegister(@Valid User user, String code) {
         if (!ValidatedUtil.validate(user)) {
             return RetJson.fail(-1, "请检查参数");
         }
@@ -145,7 +142,7 @@ public class UserController {
      * @return
      */
     @RequestMapping("/alterUserInfo")
-    public RetJson alterUserInfo(UserInfo userInfo, HttpServletRequest request){
+    public RetJson alterUserInfo(@Valid UserInfo userInfo, HttpServletRequest request){
         if (!ValidatedUtil.validate(userInfo)){
             return RetJson.fail(-1,"请检查参数");
         }
@@ -181,7 +178,7 @@ public class UserController {
      * @return
      */
     @RequestMapping("/bindMailbox")
-    public RetJson bindMailbox(String email,String code){
+    public RetJson bindMailbox(@Validated @Email String email,String code){
         String redisCode=(String) redisService.get(email);
         if (code.equals(redisCode)){
             return RetJson.succcess(null);
@@ -194,7 +191,7 @@ public class UserController {
      * @param email 邮箱地址
      */
     @RequestMapping("/getEmailCode")
-    public RetJson getEmailCode(@RequestParam("email") String email){
+    public RetJson getEmailCode(@Validated @Email String email){
         emailService.sentVerificationCode(email);
         return RetJson.succcess(null);
     }
