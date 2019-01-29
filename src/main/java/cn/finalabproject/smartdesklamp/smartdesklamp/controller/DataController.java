@@ -7,6 +7,7 @@ import cn.finalabproject.smartdesklamp.smartdesklamp.service.*;
 import cn.finalabproject.smartdesklamp.smartdesklamp.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,21 +26,21 @@ public class DataController {
     private EquipmentService equipmentService;
     @Autowired
     private EnvironmentService environmentService;
+    User user=null;
+
+    @ModelAttribute
+    public void comment(HttpServletRequest request){
+        user=(User) request.getAttribute("user");
+    }
 
     @RequestMapping("/getBaseData")
     public RetJson getBaseData(HttpServletRequest request){
-        Integer uid=((User)request.getAttribute("user")).getId();
+        Integer uid=user.getId();
         BaseDataViewObject baseDataViewObject=dataShowService.getBaseData(uid);
         return RetJson.succcess("baseDataViewObject",baseDataViewObject);
     }
 
-    /**
-     * 获取签到信息
-     * @param beginDate 开始日期
-     * @param endDate   结束日期
-     * @param request   请求
-     * @return
-     */
+
     @RequestMapping("/getSignInfos")
     public RetJson getUserSignInfos(@DateTimeFormat(pattern = "yyyy-MM-dd") Date beginDate, @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, HttpServletRequest request){
         User user = (User)request.getAttribute("user");

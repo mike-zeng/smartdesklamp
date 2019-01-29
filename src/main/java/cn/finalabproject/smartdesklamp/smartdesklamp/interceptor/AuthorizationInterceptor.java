@@ -6,7 +6,6 @@ import cn.finalabproject.smartdesklamp.smartdesklamp.model.ExcludeURI;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.RedisService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.UserService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.JwtUtils;
-
 import com.auth0.jwt.interfaces.Claim;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,8 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
         if (isExclude(url)){
             return true;
         }
+
         //获取请求头部中的token
         String token=request.getHeader("Authorization");
         if (token!=null){
@@ -51,9 +53,11 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
             Map<String, Claim> map= JwtUtils.VerifyToken(token);
             String uuid=map.get("uuid").asString();
             String id=map.get("id").asString();
+
             //判断token是否有效
             if (uuid!=null&&id!=null&&redisService.exists("user:"+id)){
                 request.setAttribute("user",userService.getUserByUserId(Integer.valueOf(id)));
+                request.setAttribute("userInfo",userService.getUserInfo(Integer.valueOf(id)));
                 request.setAttribute("id",Integer.valueOf(id));
                 String ret=(String) redisService.get("user:"+id);
                 if (ret.equals(uuid)||true){
@@ -76,6 +80,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
         writer.write(RetJson.fail(-2,"token已过期,请重新登入").toString());
         writer.flush();
         return false;
+
     }
 
     public boolean isExclude(String uri){
@@ -84,6 +89,12 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
             return true;
         }
         return false;
+    }
+
+    public static void main(String[] args) throws Exception {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        System.out.println(sdf.format(new Date()));
+//        System.out.println(new Date().getTime());
     }
 
 }

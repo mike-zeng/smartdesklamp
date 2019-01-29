@@ -61,11 +61,15 @@ public class DataShowServiceImpl implements DataShowService {
         int count=sittingPostureMapper.getCountByDate(new Date());
 
         //计算分数,最简陋的一种方式,毫无科学依据
-        score=book[0]*10+book[1]*7+book[2]*7+book[3]*5+book[4]*5+book[5]*3;
-        score=100-(100*(book[1]+book[2])/count*0.7+(100*(book[3]+book[4])/count*0.8)+100*book[5]/count*0.9+100*book[6]/count*1);
+        if (count!=0){
+            score=100-(100*(book[1]+book[2])/count*0.7+(100*(book[3]+book[4])/count*0.8)+100*book[5]/count*0.9+100*book[6]/count*1);
+        }else{
+            score=0;
+        }
 
-        //获取总时间长
-        accuracy=((double)true_p)/(false_p+true_p);
+        if (count!=0){
+            accuracy=((double)true_p)/(false_p+true_p);
+        }
 
         //填充数据
         baseDataViewObject.setTotalTime(count*2);//总时长 ok
