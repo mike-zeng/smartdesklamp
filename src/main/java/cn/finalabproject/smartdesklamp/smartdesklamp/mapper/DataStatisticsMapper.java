@@ -32,5 +32,17 @@ public interface DataStatisticsMapper {
     })
     public FocusStatistics[] queryFoucsStatistics(@Param("uid") int uid, @Param("date") Date date);
 
+    @Insert("insert into sitting_posture_statistics(uid,t0,t1,t2,t3,t4,t5,t6) values(#{uid},#{t0},#{t1},#{t2},#{t3},#{t4},#{t5},#{t6})")
+    public boolean addSittingPostureStatistics(SittingPostureStatistics obj);
+
+    @Insert("insert into study_time_statistics(uid,total_time) values(#{uid},#{totalTime})")
+    public boolean addStudyTimeStatistics(StudyTimeStatistics obj);
+
+    @Insert("insert into posture_score_statistics(uid,score) values(#{uid},#{score})")
+    public boolean addPostureScoreStatistics(PostureScoreStatistics obj);
+
+    @Insert("insert into focus_statistics(uid,focus_score) values(#{uid},#{focusScore})")
+    public boolean addFocusStatistics(FocusStatistics obj);
+
 
 }

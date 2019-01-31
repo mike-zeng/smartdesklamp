@@ -12,6 +12,8 @@ public interface UserService {
 
     public User getUserByUserName(String userName);
 
+    public Integer[] getAllUserIdList();
+
     public Boolean logout();
 
     public void register(User user);

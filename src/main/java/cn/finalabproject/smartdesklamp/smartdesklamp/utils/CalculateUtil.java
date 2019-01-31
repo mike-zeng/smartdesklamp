@@ -9,12 +9,19 @@ import java.util.Map;
  * 用于计算各种数据的工具类
  */
 public class CalculateUtil {
+
+    public static Double calculateFoucsScoreByPostures(int[] book){
+        return 0.0;
+    }
     //通过坐姿情况计算得分
     public static Double calculateScoreByPostures(int[] book){
         if (book.length!=7){
             return null;
         }
         int count=getCount(book);
+        if (count==0){
+            return 0.0;
+        }
         Double score=100-(100*(book[1]+book[2])/count*0.7+(100*(book[3]+book[4])/count*0.8)+100*book[5]/count*0.9+100*book[6]/count*1);
         return score;
     }
@@ -86,6 +93,9 @@ public class CalculateUtil {
         double num=0;
         for (int i=0;i<book.length;i++){
             num+=(book[i]-average)*(book[i]-average);
+        }
+        if (book.length==0) {
+            return 0.0;
         }
         return num/book.length;
     }

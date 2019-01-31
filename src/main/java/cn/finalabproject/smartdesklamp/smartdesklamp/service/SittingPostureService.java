@@ -15,5 +15,7 @@ public interface SittingPostureService {
 
     public SittingPostureInfo[] queryPostures(Timestamp beginTime,Timestamp endTime,Integer uid);
 
+    SittingPostureInfo[] getPosturesByDate(Date date, Integer uid);
+
     public int getCountByDate(Date date);
 }
