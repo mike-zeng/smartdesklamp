@@ -21,4 +21,7 @@ public interface UserMapper {
 
     @Select("select * from user where id=#{id}")
     public User getUserById(int id);
+
+    @Select("select id from user")
+    public Integer[] getAllUserIdList();
 }

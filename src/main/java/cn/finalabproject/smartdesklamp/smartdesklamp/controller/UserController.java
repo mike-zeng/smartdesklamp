@@ -25,6 +25,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,20 +52,32 @@ public class UserController {
         }
         Boolean b=userService.login(user.getUsername(),user.getPassword());
         if (b==true){
-            try {
-                user=userService.getUserByUserName(user.getUsername());
-                UUID uuid=UUID.randomUUID();
-                String token= JwtUtils.createToken(uuid,user.getId().toString());
-                redisService.set("user:"+user.getId(),uuid.toString(),60*60*24*7);
+            user=userService.getUserByUserName(user.getUsername());
+            request.setAttribute("id",user.getId()+"");
+            //登入成功,并且设置了记住我,则发放token
+            if (true){
+                //手机app
+                try {
+                    //生成一个随机的不重复的uuid
+                    UUID uuid=UUID.randomUUID();
+                    request.setAttribute("uuid",uuid.toString());
+                    String token=JwtUtils.createToken(uuid,user.getId().toString());
+                    //将uuid和user以键值对的形式存放在redis中
+                    user.setPassword(null);
+                    user.setSalt(null);
+                    redisService.set("user:"+user.getId(),uuid.toString(),60*60*24*7);
 
-                Map<String,String> map=new HashMap<>();
-                map.put("id",user.getId().toString());
-                map.put("token",token);
-                return RetJson.succcess(map);
-            }catch (Exception e){
-                e.printStackTrace();
-                return RetJson.fail(-1,"登入失败，服务端错误");
+                    Map map = new LinkedHashMap();
+                    map.put("token",token);
+                    map.put("id",user.getId());
+                    return RetJson.succcess(map);
+                }catch (Exception e){
+                    System.out.println("token获取失败");
+                }
             }
+            Map<String,Object> map=new LinkedHashMap<>();
+            map.put("id",user.getId());
+            return RetJson.succcess(map);
         }else {
             return RetJson.fail(-1,"登入失败,请检查用户名或密码");
         }

@@ -78,6 +78,12 @@ public class UserServiceImpl implements UserService {
         return userMapper.getUserByUserName(userName);
     }
 
+    @Override
+    public Integer[] getAllUserIdList() {
+        Integer[] integers=userMapper.getAllUserIdList();
+        return integers;
+    }
+
 
     @Override
     public void register(User user)

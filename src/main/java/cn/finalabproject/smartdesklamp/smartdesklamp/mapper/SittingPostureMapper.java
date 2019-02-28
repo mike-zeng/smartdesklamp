@@ -19,7 +19,10 @@ public interface SittingPostureMapper {
     public boolean updatePosture(SittingPostureInfo sittingPostureInfo);
 
     @Select("select * from sitting_posture where (time between #{beginTime} and #{endTime}) and uid=#{uid}")
-    public SittingPostureInfo[] queryPostures(@Param("beginTime") Timestamp beginTime,@Param("endTime") Timestamp endTime,@Param("uid") Integer uid);
+    public SittingPostureInfo[]  queryPostures(@Param("beginTime") Timestamp beginTime,@Param("endTime") Timestamp endTime,@Param("uid") Integer uid);
+
+    @Select("select * from sitting_posture where to_days(#{date})=to_days(time) and uid=#{uid}")
+    public SittingPostureInfo[]  queryPosturesByDate(@Param("date")Date date,@Param("uid")Integer uid);
 
     @Select("select count(id) from sitting_posture where to_days(time)=to_days(#{date})")
     public int getCountByDate(Date date);

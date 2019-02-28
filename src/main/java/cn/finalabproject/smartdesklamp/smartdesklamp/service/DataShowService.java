@@ -1,8 +1,6 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.service;
 
-import cn.finalabproject.smartdesklamp.smartdesklamp.vo.BaseDataViewObject;
-import cn.finalabproject.smartdesklamp.smartdesklamp.vo.EnvironmentInfoViewObject;
-import cn.finalabproject.smartdesklamp.smartdesklamp.vo.SpecificEnvironmentDataViewObject;
+import cn.finalabproject.smartdesklamp.smartdesklamp.vo.*;
 
 import java.util.Date;
 
@@ -16,4 +14,11 @@ public interface DataShowService {
 
     SpecificEnvironmentDataViewObject getSpecificData(Date date,Integer eid);
 
+    SittingPostureViewObject getSittingPostureData(Integer uid, Date date);
+
+    StudyTimeViewObject getStudyTimeData(Integer uid, Date date);
+
+    MarkDataViewObject getMarkData(Integer uid,Date date);
+
+    FocusViewObject getFocusData(Integer uid,Date date);
 }
