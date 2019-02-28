@@ -3,6 +3,7 @@ package cn.finalabproject.smartdesklamp.smartdesklamp.controller;
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.Music;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.EquipmentService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.MusicService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.UserService;
@@ -67,14 +68,15 @@ public class MusicController {
     }
 
     @RequestMapping("/alterMusic")
-    public RetJson alterCurrentMusic(Integer eid,Integer musicId, HttpServletRequest request){
+    public RetJson alterCurrentMusic(Integer musicId, HttpServletRequest request){
         User user = (User)request.getAttribute("user");
+        UserInfo userInfo = (UserInfo)request.getAttribute("userInfo");
         Integer uid = user.getId();
-        Integer equipmentUserId = equipmentService.getUserId(eid);
-        if(equipmentUserId == null){
+        Integer eid = userInfo.getEid();
+        if(eid == null){
             return RetJson.fail(-1,"请先绑定该设备!");
         }
-        if(uid.intValue() != equipmentUserId.intValue()){
+        if(uid.intValue() != eid.intValue()){
             return RetJson.fail(-1,"操作非法！");
         }
         if(musicService.queryMusicById(musicId) == null){

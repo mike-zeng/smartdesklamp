@@ -3,6 +3,7 @@ package cn.finalabproject.smartdesklamp.smartdesklamp.controller;
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.EquipmentService;
+import cn.finalabproject.smartdesklamp.smartdesklamp.service.UserService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.Md5Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,8 @@ public class DeskLampController {
 
     @Autowired
     private EquipmentService equipmentService;
+    @Autowired
+    private UserService userService;
 
     @RequestMapping("/switch")
     public RetJson switchLampMode(Integer type,Integer eid){
@@ -38,13 +41,12 @@ public class DeskLampController {
         String encryptString = Md5Utils.MD5Encode(macAddress,"utf-8",false);
         String tempMacAddress = equipmentService.queryEquipmentById(eid).getMacAddress();
         //设备不存在，或者macAddress不正确
+
+
         if(tempMacAddress == null||!tempMacAddress.endsWith(encryptString)){
             return RetJson.fail(-1,"绑定失败！");
         }
-        if(equipmentService.getUserId(eid) != null){
-            //需要向之前绑定的用户发送验证码！
-        }
-        if(equipmentService.updateUserId(id,eid)){
+        if(userService.alterEquipmentId(eid,id)){
             return RetJson.succcess(null);
         }else {
             return RetJson.fail(-1,"绑定失败。");

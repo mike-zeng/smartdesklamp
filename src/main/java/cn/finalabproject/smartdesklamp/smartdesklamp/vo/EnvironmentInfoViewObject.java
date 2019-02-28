@@ -21,4 +21,12 @@ public class EnvironmentInfoViewObject {
     private Integer musicId;
     //工作时长，单位为分钟
     private Integer workTime;
+
+    private float brightnessChange;
+
+    private float noiseChange;
+
+    private float temperatureChange;
+
+    private float humidityChange;
 }

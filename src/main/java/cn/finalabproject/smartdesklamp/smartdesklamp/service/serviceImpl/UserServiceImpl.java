@@ -134,6 +134,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean alterEquipmentId(Integer eid, Integer id) {
+        return userInfoMapper.alterEquipmentId(eid,id);
+    }
+
+    @Override
     public boolean saveUserHeadPortrait(MultipartFile multipartFile, Integer id) {
         String username=userMapper.getUserByUserId(id).getUsername();
         if (username==null){

@@ -23,12 +23,6 @@ public interface EquipmentMapper {
     })
     public Equipment queryEquipmentById(@Param("equipmentId") Integer equipmentId);
 
-    @Update("update equipment set uid=#{uid} where equipment_id=#{equipmentId}")
-    public boolean updateUserId(@Param("uid") Integer uid,Integer equipmentId);
-
-    @Select("select uid from equipment where equipment_id=#{equipmentId}")
-    public Integer getUserId(@Param("equipmentId") Integer equipmentId);
-
     @Update("update equipment set music_id=#{musicId} where equipment_id=#{eid}")
     public boolean alterCurrentMusicId(@Param("eid")Integer eid,@Param("musicId")Integer musicId);
 

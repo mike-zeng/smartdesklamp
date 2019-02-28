@@ -30,4 +30,6 @@ public class UserInfo {
     private String nickName;
 
     private String backgroundPath;
+
+    private Integer eid;
 }

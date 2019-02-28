@@ -1,9 +1,7 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.WebSocket;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.SittingPostureDetection;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.Environment;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.SittingPostureInfo;
-import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.*;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.EnvironmentService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.EquipmentService;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.RedisService;
@@ -32,8 +30,10 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Timestamp;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 @Component
 @ServerEndpoint("/getMessageServer/{token}/{eid}/{macAddress}")
@@ -52,36 +52,36 @@ public class MessageSocketServer {
     private UserInfo userInfo;
     private Integer eid;
 
-    //发送给所有的用户
-    public static void sentAll(String message){
-        Set<Integer> set=webSocketMap.keySet();
-        MessageSocketServer messageSocketServer=null;
-        for (Integer it:set){
-            messageSocketServer=webSocketMap.get(it);
-            messageSocketServer.session.getAsyncRemote().sendText(message);
-        }
-    }
-
-    //发送给指定的用户集合
-    public static void sentAll(Integer[] idArr,String message){
-        Session session=null;
-        MessageSocketServer messageSocketServer=null;
-        for (int i=0;i<idArr.length;i++){
-            messageSocketServer=webSocketMap.get(idArr[i]);
-            if (messageSocketServer==null){
-                //如果当前用户不在线，则放在缓存列表中。。。。。。
-                List<String> list=waitToSent.get(idArr[i]);
-                if (list==null){
-                    waitToSent.put(idArr[i],new LinkedList<>());
-                }else {
-                    list.add(message);
-                }
-                continue;
-            }else{
-                messageSocketServer.session.getAsyncRemote().sendText(message);
-            }
-        }
-    }
+//    //发送给所有的用户
+//    public static void sentAll(String message){
+//        Set<Integer> set=webSocketMap.keySet();
+//        MessageSocketServer messageSocketServer=null;
+//        for (Integer it:set){
+//            messageSocketServer=webSocketMap.get(it);
+//            messageSocketServer.session.getAsyncRemote().sendText(message);
+//        }
+//    }
+//
+//    //发送给指定的用户集合
+//    public static void sentAll(Integer[] idArr,String message){
+//        Session session=null;
+//        MessageSocketServer messageSocketServer=null;
+//        for (int i=0;i<idArr.length;i++){
+//            messageSocketServer=webSocketMap.get(idArr[i]);
+//            if (messageSocketServer==null){
+//                //如果当前用户不在线，则放在缓存列表中。。。。。。
+//                List<String> list=waitToSent.get(idArr[i]);
+//                if (list==null){
+//                    waitToSent.put(idArr[i],new LinkedList<>());
+//                }else {
+//                    list.add(message);
+//                }
+//                continue;
+//            }else{
+//                messageSocketServer.session.getAsyncRemote().sendText(message);
+//            }
+//        }
+//    }
 
     public static void sentToHardWare(Integer eid,String message) {
         MessageSocketServer messageSocketServer = webSocketHardwareMap.get(eid);
@@ -100,6 +100,7 @@ public class MessageSocketServer {
     @OnOpen
     public void onOpen(Session session,@PathParam("token") String token,@PathParam("eid")Integer eid,@PathParam("macAddress")String macAddress) throws IOException {
         this.session = session;
+        this.eid = eid;
         List<String> list = null;
         //如果是台灯进行连接
         if (token.endsWith("null")) {
@@ -149,37 +150,40 @@ public class MessageSocketServer {
     //接受来自客户端的消息
     @OnMessage
     public void onMessage(String message) throws IOException {
-            EquipmentService equipmentService = SpringUtil.getBean(EquipmentServiceImpl.class);
-            EnvironmentService environmentService = SpringUtil.getBean(EnvironmentServiceImpl.class);
-            SittingPostureService sittingPostureService = SpringUtil.getBean(SittingPostureServiceImpl.class);
-            Base64.Decoder decoder = Base64.getDecoder();
-            Message m = null;
+        EquipmentService equipmentService = SpringUtil.getBean(EquipmentServiceImpl.class);
+        EnvironmentService environmentService = SpringUtil.getBean(EnvironmentServiceImpl.class);
+        SittingPostureService sittingPostureService = SpringUtil.getBean(SittingPostureServiceImpl.class);
+        Base64.Decoder decoder = Base64.getDecoder();
+        Message m = null;
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            try {
-                m = objectMapper.readValue(message, Message.class);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return;
-            }
-
-        Integer eid = m.getEquipmentId();
-        String encryptString = Md5Utils.MD5Encode(m.getMacAddress(),"utf-8",false);
-        //检测传过来的mac地址是否正确
-        if(!encryptString.endsWith(equipmentService.queryEquipmentById(eid).getMacAddress())) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            m = objectMapper.readValue(message, Message.class);
+        } catch (Exception e) {
+            e.printStackTrace();
             return;
         }
-        Environment environment = new Environment(null,m.getBrightness(),m.getNoise(),m.getTemperature(),m.getHumidity(),m.getTime(),m.getEquipmentId());
-        environmentService.insertEnvironment(environment);
-        //从消息中读取Base64加密后的字符串
-        String image = m.getImage();
-        byte[] bytes = decoder.decode(image);
-        InputStream buffin = new ByteArrayInputStream(bytes,0,bytes.length);
-        BufferedImage img = ImageIO.read(buffin);
-        SittingPostureInfo sittingPostureInfo = SittingPostureDetection.getSittingPosttureInfo(img);
-        sittingPostureInfo.setUid(id);
-        sittingPostureInfo.setTime(m.getTime());
-        sittingPostureService.insertPosture(sittingPostureInfo);
+        if(m.getType().equals(Message.EQUIPMENT)){
+            EquipmentMessage equipmentMessage = m.getEquipmentMessage();
+            Integer eid = equipmentMessage.getEquipmentId();
+            String encryptString = Md5Utils.MD5Encode(equipmentMessage.getMacAddress(),"utf-8",false);
+            //检测传过来的mac地址是否正确
+            if(!encryptString.endsWith(equipmentService.queryEquipmentById(eid).getMacAddress())) {
+                return;
+            }
+            Environment environment = new Environment(null,equipmentMessage.getBrightness(),equipmentMessage.getNoise(),equipmentMessage.getTemperature(),equipmentMessage.getHumidity(),equipmentMessage.getTime(),equipmentMessage.getEquipmentId());
+            environmentService.insertEnvironment(environment);
+            //从消息中读取Base64加密后的字符串
+            String image = equipmentMessage.getImage();
+            byte[] bytes = decoder.decode(image);
+            InputStream buffin = new ByteArrayInputStream(bytes,0,bytes.length);
+            BufferedImage img = ImageIO.read(buffin);
+            SittingPostureInfo sittingPostureInfo = SittingPostureDetection.getSittingPosttureInfo(img);
+            sittingPostureInfo.setUid(id);
+            sittingPostureInfo.setTime(equipmentMessage.getTime());
+            sittingPostureService.insertPosture(sittingPostureInfo);
+        }
+
     }
 
     //发送消息
@@ -195,23 +199,17 @@ public class MessageSocketServer {
 @Getter
 @AllArgsConstructor
 class Message{
+    public static final String EQUIPMENT="equipment";
+    public static final String USER="user";
+
     public Message() {
     }
-    private Integer equipmentId;
 
-    private float brightness;
+    private String type;
 
-    private float noise;
+    private EquipmentMessage equipmentMessage;
 
-    private float temperature;
-
-    private float humidity;
-    //String str = Base64.encodeToString(mBuff,Base64.DEFAULT);将图片用base64编码
-    private String image;
-
-    private String macAddress;
-
-    private Timestamp time;
+    private UserMessage userMessage;
 
     public String toString(){
         ObjectMapper objectMapper=new ObjectMapper();

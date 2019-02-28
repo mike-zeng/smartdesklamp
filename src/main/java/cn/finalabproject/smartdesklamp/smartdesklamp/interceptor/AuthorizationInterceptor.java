@@ -54,6 +54,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
             //判断token是否有效
             if (uuid!=null&&id!=null&&redisService.exists("user:"+id)){
                 request.setAttribute("user",userService.getUserByUserId(Integer.valueOf(id)));
+                request.setAttribute("userInfo",userService.getUserInfo(Integer.valueOf(id)));
                 request.setAttribute("id",Integer.valueOf(id));
                 String ret=(String) redisService.get("user:"+id);
                 if (ret.equals(uuid)||true){

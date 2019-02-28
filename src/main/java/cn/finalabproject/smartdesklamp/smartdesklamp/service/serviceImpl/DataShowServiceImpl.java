@@ -81,7 +81,7 @@ public class DataShowServiceImpl implements DataShowService {
     public EnvironmentInfoViewObject getEnvironmentData(Integer eid) {
         Integer workTime = null;
         EnvironmentInfoViewObject environmentInfoViewObject = new EnvironmentInfoViewObject();
-        Environment environment = environmentMapper.queryCurrentEnvironmentInfo(eid);
+        Environment[] environments = environmentMapper.queryCurrentEnvironmentInfo(eid);
         Integer musicId = equipmentMapper.getCurrentMusicId(eid);
         Integer count = sittingPostureMapper.getCountByDate(new Date());
         if(count == null){
@@ -89,11 +89,22 @@ public class DataShowServiceImpl implements DataShowService {
         }else{
             workTime = count * 2;
         }
-        if(environment != null){
-            environmentInfoViewObject.setBrightness(environment.getBrightness());
-            environmentInfoViewObject.setHumidity(environment.getHumidity());
-            environmentInfoViewObject.setNoise(environment.getNoise());
-            environmentInfoViewObject.setTemperature(environment.getTemperature());
+        if(environments != null){
+            if(environments.length == 2){
+                environmentInfoViewObject.setBrightnessChange(environments[0].getBrightness() - environments[1].getBrightness());
+                environmentInfoViewObject.setHumidityChange(environments[0].getHumidity() - environments[1].getHumidity());
+                environmentInfoViewObject.setTemperatureChange(environments[0].getTemperature() - environments[1].getTemperature());
+                environmentInfoViewObject.setNoiseChange(environments[0].getNoise() - environments[1].getNoise());
+            }else{
+                environmentInfoViewObject.setBrightnessChange(0);
+                environmentInfoViewObject.setHumidityChange(0);
+                environmentInfoViewObject.setTemperatureChange(0);
+                environmentInfoViewObject.setNoiseChange(0);
+            }
+            environmentInfoViewObject.setBrightness(environments[0].getBrightness());
+            environmentInfoViewObject.setHumidity(environments[0].getHumidity());
+            environmentInfoViewObject.setNoise(environments[0].getNoise());
+            environmentInfoViewObject.setTemperature(environments[0].getTemperature());
         }
         environmentInfoViewObject.setWorkTime(workTime);
         environmentInfoViewObject.setMusicId(musicId);

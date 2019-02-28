@@ -16,7 +16,5 @@ public class Equipment {
 
     private String macAddress;
 
-    private Integer uid;
-
     private Integer musicId;
 }

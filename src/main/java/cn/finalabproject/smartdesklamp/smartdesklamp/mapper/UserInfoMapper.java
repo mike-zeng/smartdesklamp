@@ -17,4 +17,7 @@ public interface UserInfoMapper {
 
     @Update("update user_info set background_path=#{backgroundPath} where id=#{id}")
     public boolean alterBackground(@Param("id") Integer id,@Param("backgroundPath") String backgroundPath);
+
+    @Update("update user_info set eid=#{eid} where id=#{id}")
+    public boolean alterEquipmentId(@Param("eid") Integer eid,@Param("id") Integer id);
 }

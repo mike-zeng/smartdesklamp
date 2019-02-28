@@ -3,6 +3,7 @@ package cn.finalabproject.smartdesklamp.smartdesklamp.controller;
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.RetJson;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.SignInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
+import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.*;
 import cn.finalabproject.smartdesklamp.smartdesklamp.vo.BaseDataViewObject;
 import cn.finalabproject.smartdesklamp.smartdesklamp.vo.EnvironmentInfoViewObject;
@@ -51,30 +52,23 @@ public class DataController {
     }
 
     @RequestMapping("/getCurrentInfo")
-    public RetJson getCurrentInfo(Integer eid,HttpServletRequest request){
-        User user = (User)request.getAttribute("user");
-        Integer uid = user.getId();
-        Integer equipmentUserId = equipmentService.getUserId(eid);
-        if(equipmentUserId == null){
-            return RetJson.fail(-1,"请先绑定设备！");
-        }
-        if(uid.intValue() != equipmentUserId.intValue()){
-            return RetJson.fail(-1,"非法操作！");
+    public RetJson getCurrentInfo(HttpServletRequest request){
+        UserInfo userInfo = (UserInfo)request.getAttribute("userInfo");
+        Integer eid = userInfo.getEid();
+        if(eid == null){
+            return RetJson.fail(-1,"暂未绑定设备，请先绑定设备！");
         }
         EnvironmentInfoViewObject environmentInfoViewObject = dataShowService.getEnvironmentData(eid);
         return RetJson.succcess("environmentInfoViewObject", environmentInfoViewObject);
     }
 
     @RequestMapping("/getSpecificInfo")
-    public RetJson getSpecificInfo(@DateTimeFormat(pattern = "yyyy-MM-dd")Date date,Integer eid,HttpServletRequest request){
-        User user = (User)request.getAttribute("user");
-        Integer uid = user.getId();
-        Integer equipmentUserId = equipmentService.getUserId(eid);
-        if(equipmentUserId == null){
-            return RetJson.fail(-1,"请绑定设备！");
-        }
-        if(uid.intValue() != equipmentUserId.intValue()){
-            return RetJson.fail(-1,"非法操作！");
+    public RetJson getSpecificInfo(@DateTimeFormat(pattern = "yyyy-MM-dd")Date date,HttpServletRequest request){
+        Integer eid = null;
+        UserInfo userInfo = (UserInfo)request.getAttribute("userInfo");
+        eid = userInfo.getEid();
+        if(eid == null) {
+            return RetJson.fail(-1,"暂未绑定设备，请先绑定设备！");
         }
         SpecificEnvironmentDataViewObject specificEnvironmentDataViewObject = dataShowService.getSpecificData(date,eid);
         return RetJson.succcess("specificData",specificEnvironmentDataViewObject);

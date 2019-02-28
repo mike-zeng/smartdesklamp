@@ -29,4 +29,6 @@ public interface UserService {
     User getUserByUserId(Integer valueOf);
 
     public boolean alterBackground(Integer id,String backgroundPath);
+
+    public boolean alterEquipmentId(Integer eid,Integer id);
 }

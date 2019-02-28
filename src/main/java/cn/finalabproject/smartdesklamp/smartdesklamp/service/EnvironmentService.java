@@ -15,5 +15,6 @@ public interface EnvironmentService {
 
     public Environment queryEnvironmentById(Integer equipmentId);
 
-    public Environment queryCurrentEnvironmentInfo(Integer eid);
+    public Environment[] queryCurrentEnvironmentInfo(Integer eid);
+
 }

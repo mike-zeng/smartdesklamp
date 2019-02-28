@@ -33,16 +33,6 @@ public class EquipmentServiceImpl implements EquipmentService {
     }
 
     @Override
-    public boolean updateUserId(Integer uid, Integer equipmentId) {
-        return equipmentMapper.updateUserId(uid,equipmentId);
-    }
-
-    @Override
-    public Integer getUserId(Integer equipmentId) {
-        return equipmentMapper.getUserId(equipmentId);
-    }
-
-    @Override
     public void switchMode(Integer type,Integer eid) {
         MessageSocketServer.sentToHardWare(eid,"Switch-" + type);
     }

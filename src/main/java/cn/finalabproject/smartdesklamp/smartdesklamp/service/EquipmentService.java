@@ -11,11 +11,6 @@ public interface EquipmentService {
 
     public Equipment queryEquipmentById(Integer id);
 
-    public boolean updateUserId(Integer uid, Integer equipmentId);
-
-    //获取使用者的id
-    public Integer getUserId(Integer equipmentId);
-
     public void switchMode(Integer type,Integer eid);
 
     public void adjustBrightness(Integer brightness,Integer eid);
