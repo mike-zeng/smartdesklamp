@@ -20,4 +20,7 @@ public interface UserInfoMapper {
 
     @Update("update user_info set eid=#{eid} where id=#{id}")
     public boolean alterEquipmentId(@Param("eid") Integer eid,@Param("id") Integer id);
+
+    @Select("select id from user_info where eid=#{eid}")
+    public Integer getUserIdByEid(@Param("eid") Integer eid);
 }

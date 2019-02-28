@@ -2,13 +2,11 @@ package cn.finalabproject.smartdesklamp.smartdesklamp.WebSocket;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.common.SittingPostureDetection;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.*;
-import cn.finalabproject.smartdesklamp.smartdesklamp.service.EnvironmentService;
-import cn.finalabproject.smartdesklamp.smartdesklamp.service.EquipmentService;
-import cn.finalabproject.smartdesklamp.smartdesklamp.service.RedisService;
-import cn.finalabproject.smartdesklamp.smartdesklamp.service.SittingPostureService;
+import cn.finalabproject.smartdesklamp.smartdesklamp.service.*;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl.EnvironmentServiceImpl;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl.EquipmentServiceImpl;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl.SittingPostureServiceImpl;
+import cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl.UserServiceImpl;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.JwtUtils;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.Md5Utils;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.SpringUtil;
@@ -19,17 +17,13 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.imageio.ImageIO;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -51,6 +45,7 @@ public class MessageSocketServer {
     private Integer id;
     private UserInfo userInfo;
     private Integer eid;
+    private Integer uid;
 
 //    //发送给所有的用户
 //    public static void sentAll(String message){
@@ -100,10 +95,11 @@ public class MessageSocketServer {
     @OnOpen
     public void onOpen(Session session,@PathParam("token") String token,@PathParam("eid")Integer eid,@PathParam("macAddress")String macAddress) throws IOException {
         this.session = session;
-        this.eid = eid;
         List<String> list = null;
+        UserService userService = SpringUtil.getBean(UserServiceImpl.class);
         //如果是台灯进行连接
         if (token.endsWith("null")) {
+            this.eid = eid;
 //            EquipmentService equipmentService = SpringUtil.getBean(EquipmentServiceImpl.class);
 //            String encriptString = Md5Utils.MD5Encode(macAddress, "utf-8", false);
 //            String tempMacAddress = equipmentService.queryEquipmentById(eid).getMacAddress();
@@ -112,6 +108,7 @@ public class MessageSocketServer {
 //                return;
 //            } else {
                 this.eid = eid;
+                this.uid = userService.getUserIdByEid(eid);
                 webSocketHardwareMap.put(eid, this);
                 //判断有没有该台灯的信息，如果有就发送
                 list = HardwareWaitToSent.get(id);//获取信息
@@ -175,13 +172,13 @@ public class MessageSocketServer {
             environmentService.insertEnvironment(environment);
             //从消息中读取Base64加密后的字符串
             String image = equipmentMessage.getImage();
-            byte[] bytes = decoder.decode(image);
-            InputStream buffin = new ByteArrayInputStream(bytes,0,bytes.length);
-            BufferedImage img = ImageIO.read(buffin);
-            SittingPostureInfo sittingPostureInfo = SittingPostureDetection.getSittingPosttureInfo(img);
+//            byte[] bytes = decoder.decode(image);
+//            InputStream buffin = new ByteArrayInputStream(bytes,0,bytes.length);
+//            BufferedImage img = ImageIO.read(buffin);
+            SittingPostureInfo sittingPostureInfo = SittingPostureDetection.getSittingPosttureInfo(uid,image);
             sittingPostureInfo.setUid(id);
             sittingPostureInfo.setTime(equipmentMessage.getTime());
-            sittingPostureService.insertPosture(sittingPostureInfo);
+//            sittingPostureService.insertPosture(sittingPostureInfo);
         }
 
     }
@@ -203,6 +200,7 @@ class Message{
     public static final String USER="user";
 
     public Message() {
+
     }
 
     private String type;

@@ -1,9 +1,6 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.sql.Timestamp;
 
@@ -11,6 +8,7 @@ import java.sql.Timestamp;
 @Getter
 @NoArgsConstructor
 @ToString
+@AllArgsConstructor
 public class SittingPostureInfo {
     int id;
     int uid;
