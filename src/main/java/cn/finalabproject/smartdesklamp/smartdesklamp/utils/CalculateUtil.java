@@ -69,6 +69,7 @@ public class CalculateUtil {
         return book;
     }
 
+    //获取正确率
     public static Double getAccuracy(int[] book){
         if (book.length!=7){
             return null;
@@ -77,9 +78,12 @@ public class CalculateUtil {
         for (int i=0;i<book.length;i++){
             sum+=book[i];
         }
+        if (sum==0){
+            return 0.0;
+        }
         return (double) book[0]/sum;
     }
-
+    //获取平均值
     public static Double getAverage(double[] book){
         double sum=0;
         for (int i=0;i<book.length;i++){
@@ -87,7 +91,7 @@ public class CalculateUtil {
         }
         return sum/book.length;
     }
-
+    //获取方差
     public static Double getVariance(double[] book){
         double average=getAverage(book);
         double num=0;

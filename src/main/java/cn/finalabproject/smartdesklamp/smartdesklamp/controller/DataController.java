@@ -21,21 +21,19 @@ public class DataController {
     private DataShowService dataShowService;
     @Autowired
     private SignInfoService signInfoService;
-    @Autowired
-    private SittingPostureService sittingPostureService;
-    @Autowired
-    private EquipmentService equipmentService;
-    @Autowired
-    private EnvironmentService environmentService;
+
     User user=null;
+    UserInfo userInfo=null;
 
     @ModelAttribute
     public void comment(HttpServletRequest request){
         user=(User) request.getAttribute("user");
+        userInfo = (UserInfo)request.getAttribute("userInfo");
+
     }
 
     @RequestMapping("/getBaseData")
-    public RetJson getBaseData(HttpServletRequest request){
+    public RetJson getBaseData(){
         Integer uid=user.getId();
         BaseDataViewObject baseDataViewObject=dataShowService.getBaseData(uid);
         return RetJson.succcess("baseDataViewObject",baseDataViewObject);
@@ -43,16 +41,14 @@ public class DataController {
 
 
     @RequestMapping("/getSignInfos")
-    public RetJson getUserSignInfos(@DateTimeFormat(pattern = "yyyy-MM-dd") Date beginDate, @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, HttpServletRequest request){
-        User user = (User)request.getAttribute("user");
+    public RetJson getUserSignInfos(@DateTimeFormat(pattern = "yyyy-MM-dd") Date beginDate, @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
         Integer uid = user.getId();
         SignInfo[] signInfos = signInfoService.querySignInfos(uid,new java.sql.Date(beginDate.getTime()),new java.sql.Date(endDate.getTime()));
         return RetJson.succcess("signInfos",signInfos);
     }
 
     @RequestMapping("/getCurrentInfo")
-    public RetJson getCurrentInfo(HttpServletRequest request){
-        UserInfo userInfo = (UserInfo)request.getAttribute("userInfo");
+    public RetJson getCurrentInfo(){
         Integer eid = userInfo.getEid();
         if(eid == null){
             return RetJson.fail(-1,"暂未绑定设备，请先绑定设备！");
@@ -62,10 +58,8 @@ public class DataController {
     }
 
     @RequestMapping("/getSpecificInfo")
-    public RetJson getSpecificInfo(@DateTimeFormat(pattern = "yyyy-MM-dd")Date date,HttpServletRequest request){
-        Integer eid = null;
-        UserInfo userInfo = (UserInfo)request.getAttribute("userInfo");
-        eid = userInfo.getEid();
+    public RetJson getSpecificInfo(@DateTimeFormat(pattern = "yyyy-MM-dd")Date date){
+        Integer eid = userInfo.getEid();
         if(eid == null) {
             return RetJson.fail(-1,"暂未绑定设备，请先绑定设备！");
         }
@@ -74,30 +68,30 @@ public class DataController {
     }
 
     @RequestMapping("/getSittingPostureData")
-    public RetJson getSittingPostureData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date, HttpServletRequest request){
-        Integer uid=((User)request.getAttribute("user")).getId();
+    public RetJson getSittingPostureData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date){
+        Integer uid=user.getId();
         SittingPostureViewObject sittingPostureViewObject=dataShowService.getSittingPostureData(uid,date);
         return RetJson.succcess("sittingPostureData",sittingPostureViewObject);
     }
 
     @RequestMapping("/getMarkData")
-    public RetJson getMarkData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date, HttpServletRequest request){
-        Integer uid=((User)request.getAttribute("user")).getId();
+    public RetJson getMarkData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date){
+        Integer uid=user.getId();
         MarkDataViewObject markDataViewObject=dataShowService.getMarkData(uid,date);
         return RetJson.succcess("markData",markDataViewObject);
     }
 
     @RequestMapping("/getStudyTimeData")
-    public RetJson getStudyTimeData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date,HttpServletRequest request){
-        Integer uid=((User)request.getAttribute("user")).getId();
+    public RetJson getStudyTimeData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date){
+        Integer uid=user.getId();
         StudyTimeViewObject studyTimeViewObject=dataShowService.getStudyTimeData(uid,date);
         return RetJson.succcess("studyTimeData",studyTimeViewObject);
     }
 
 
     @RequestMapping("/getFocusData")
-    public RetJson getFocusData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date,HttpServletRequest request){
-        Integer uid=((User)request.getAttribute("user")).getId();
+    public RetJson getFocusData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date date){
+        Integer uid=user.getId();
         FocusViewObject focusViewObject=dataShowService.getFocusData(uid,date);
         return RetJson.succcess("focusData",focusViewObject);
     }

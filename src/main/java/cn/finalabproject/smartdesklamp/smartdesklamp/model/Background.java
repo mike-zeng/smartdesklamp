@@ -13,6 +13,8 @@ public class Background {
     private Integer bid;
 
     private Integer uid;
+
+    private String fileName;
     //标记是否为系统背景
     private Integer flag;
 

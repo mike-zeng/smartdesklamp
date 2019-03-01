@@ -47,37 +47,6 @@ public class MessageSocketServer {
     private Integer eid;
     private Integer uid;
 
-//    //发送给所有的用户
-//    public static void sentAll(String message){
-//        Set<Integer> set=webSocketMap.keySet();
-//        MessageSocketServer messageSocketServer=null;
-//        for (Integer it:set){
-//            messageSocketServer=webSocketMap.get(it);
-//            messageSocketServer.session.getAsyncRemote().sendText(message);
-//        }
-//    }
-//
-//    //发送给指定的用户集合
-//    public static void sentAll(Integer[] idArr,String message){
-//        Session session=null;
-//        MessageSocketServer messageSocketServer=null;
-//        for (int i=0;i<idArr.length;i++){
-//            messageSocketServer=webSocketMap.get(idArr[i]);
-//            if (messageSocketServer==null){
-//                //如果当前用户不在线，则放在缓存列表中。。。。。。
-//                List<String> list=waitToSent.get(idArr[i]);
-//                if (list==null){
-//                    waitToSent.put(idArr[i],new LinkedList<>());
-//                }else {
-//                    list.add(message);
-//                }
-//                continue;
-//            }else{
-//                messageSocketServer.session.getAsyncRemote().sendText(message);
-//            }
-//        }
-//    }
-
     public static void sentToHardWare(Integer eid,String message) {
         MessageSocketServer messageSocketServer = webSocketHardwareMap.get(eid);
         if (messageSocketServer == null) {

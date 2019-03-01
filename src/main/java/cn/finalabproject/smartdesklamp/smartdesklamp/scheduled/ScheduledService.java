@@ -43,7 +43,7 @@ public class ScheduledService {
             dataStatisticsMapper.addFocusStatistics(focusStatistics);
             dataStatisticsMapper.addPostureScoreStatistics(postureScoreStatistics);
             dataStatisticsMapper.addStudyTimeStatistics(studyTimeStatistics);
-            dataStatisticsMapper.addPostureScoreStatistics(postureScoreStatistics);
+            dataStatisticsMapper.addSittingPostureStatistics(sittingPostureStatistics);
             System.out.println("成功写入数据");
         }
     }

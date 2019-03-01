@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -46,7 +45,7 @@ public class UserController {
     private SignInfoService signInfoService;
     //登入
     @RequestMapping("/login")
-    public RetJson login(@Valid User user, HttpServletRequest request){
+    public RetJson login(User user, HttpServletRequest request){
         if (!ValidatedUtil.validate(user)){
             return RetJson.fail(-1,"登入失败，请检查用户名或密码");
         }
@@ -54,9 +53,8 @@ public class UserController {
         if (b==true){
             user=userService.getUserByUserName(user.getUsername());
             request.setAttribute("id",user.getId()+"");
-            //登入成功,并且设置了记住我,则发放token
+            //登入成功,则发放token
             if (true){
-                //手机app
                 try {
                     //生成一个随机的不重复的uuid
                     UUID uuid=UUID.randomUUID();
@@ -72,7 +70,7 @@ public class UserController {
                     map.put("id",user.getId());
                     return RetJson.succcess(map);
                 }catch (Exception e){
-                    System.out.println("token获取失败");
+                    return RetJson.fail(-1,"登入失败,请检查用户名或密码");
                 }
             }
             Map<String,Object> map=new LinkedHashMap<>();
@@ -120,13 +118,11 @@ public class UserController {
             return RetJson.fail(-1, "请检查参数");
         }
         if (redisService.exists(user.getUsername()) && redisService.get(user.getUsername()).equals(code)) {
-//            if (true) {
             if (userService.findUserByUserName(user.getUsername()) == null) {
                 userService.register(user);
                 return RetJson.succcess(null);
             }
             return RetJson.fail(-1, "用户已存在！");
-//            }
         }
         return RetJson.fail(-1, "验证码不正确！");
     }
@@ -134,11 +130,10 @@ public class UserController {
     /**
      * 获取用户信息
      * @param id 用户id
-     * @param request
      * @return
      */
     @RequestMapping("/getUserInfo")
-    public RetJson getUserInfo(Integer id, HttpServletRequest request){
+    public RetJson getUserInfo(Integer id){
         UserInfo userInfo=userService.getUserInfo(id);
         if (userInfo==null){
             return RetJson.fail(-1,"获取用户信息失败");
@@ -155,7 +150,7 @@ public class UserController {
      * @return
      */
     @RequestMapping("/alterUserInfo")
-    public RetJson alterUserInfo(@Valid UserInfo userInfo, HttpServletRequest request){
+    public RetJson alterUserInfo(UserInfo userInfo, HttpServletRequest request){
         if (!ValidatedUtil.validate(userInfo)){
             return RetJson.fail(-1,"请检查参数");
         }
@@ -193,7 +188,7 @@ public class UserController {
     @RequestMapping("/bindMailbox")
     public RetJson bindMailbox(@Validated @Email String email,String code){
         String redisCode=(String) redisService.get(email);
-        if (code.equals(redisCode)){
+        if (code!=null&&code.equals(redisCode)){
             return RetJson.succcess(null);
         }
         return RetJson.fail(-1,"邮箱验证码错误");
@@ -226,7 +221,7 @@ public class UserController {
         return RetJson.succcess(null);
     }
 
-    public  void copyFieldValue(UserInfo userInfo,UserInfo pastUserInfo){
+    private   void copyFieldValue(UserInfo userInfo,UserInfo pastUserInfo){
         for(Field f : userInfo.getClass().getDeclaredFields()){
             f.setAccessible(true);
             try {

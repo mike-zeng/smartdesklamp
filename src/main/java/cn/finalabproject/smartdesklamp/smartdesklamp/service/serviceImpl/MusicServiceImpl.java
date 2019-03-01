@@ -3,6 +3,8 @@ package cn.finalabproject.smartdesklamp.smartdesklamp.service.serviceImpl;
 import cn.finalabproject.smartdesklamp.smartdesklamp.mapper.MusicMapper;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.Music;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.MusicService;
+import cn.finalabproject.smartdesklamp.smartdesklamp.utils.COSUtils;
+import com.qcloud.cos.COSClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +21,15 @@ public class MusicServiceImpl implements MusicService {
 
     @Override
     public boolean deleteMusicById(Integer id, Integer uid) {
-        return musicMapper.deleteMusicById(id,uid);
+        Music music=musicMapper.queryMusicById(id);
+        String url=music.getMusicUrl();
+        String temp[];
+        if (musicMapper.deleteMusicById(id,uid)){
+            temp=url.split("/");
+            COSUtils.deleteFile("music/"+temp[temp.length-1]);
+            return true;
+        }
+        return false;
     }
 
     @Override

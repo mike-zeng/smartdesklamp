@@ -23,6 +23,8 @@ public class BackgroundServiceImpl implements BackgroundService {
 
     @Override
     public boolean deleteBackground(Integer uid,Integer bid) {
+
+        backgroundMapper.queryBackgroundByBid(uid,bid);
         return backgroundMapper.deleteBackground(uid,bid);
     }
 
@@ -37,8 +39,8 @@ public class BackgroundServiceImpl implements BackgroundService {
     }
 
     @Override
-    public Background queryBackgroundByBid(Integer bid) {
-        return backgroundMapper.queryBackgroundByBid(bid);
+    public Background queryBackgroundByBid(Integer uid,Integer bid) {
+        return backgroundMapper.queryBackgroundByBid(uid,bid);
     }
 
     @Override
