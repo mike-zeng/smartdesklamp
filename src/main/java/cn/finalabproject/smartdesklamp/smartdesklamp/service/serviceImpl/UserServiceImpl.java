@@ -46,7 +46,6 @@ public class UserServiceImpl implements UserService {
 
         Subject currentUser = SecurityUtils.getSubject();
 
-
         UsernamePasswordToken token=new UsernamePasswordToken(userName,password);
         try {
             currentUser.login(token);//登入验证

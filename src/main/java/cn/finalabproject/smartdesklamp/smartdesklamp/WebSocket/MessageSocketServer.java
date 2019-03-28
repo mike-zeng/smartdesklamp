@@ -11,9 +11,6 @@ import cn.finalabproject.smartdesklamp.smartdesklamp.utils.JwtUtils;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.Md5Utils;
 import cn.finalabproject.smartdesklamp.smartdesklamp.utils.SpringUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,37 +44,6 @@ public class MessageSocketServer {
     private Integer eid;
     private Integer uid;
 
-//    //发送给所有的用户
-//    public static void sentAll(String message){
-//        Set<Integer> set=webSocketMap.keySet();
-//        MessageSocketServer messageSocketServer=null;
-//        for (Integer it:set){
-//            messageSocketServer=webSocketMap.get(it);
-//            messageSocketServer.session.getAsyncRemote().sendText(message);
-//        }
-//    }
-//
-//    //发送给指定的用户集合
-//    public static void sentAll(Integer[] idArr,String message){
-//        Session session=null;
-//        MessageSocketServer messageSocketServer=null;
-//        for (int i=0;i<idArr.length;i++){
-//            messageSocketServer=webSocketMap.get(idArr[i]);
-//            if (messageSocketServer==null){
-//                //如果当前用户不在线，则放在缓存列表中。。。。。。
-//                List<String> list=waitToSent.get(idArr[i]);
-//                if (list==null){
-//                    waitToSent.put(idArr[i],new LinkedList<>());
-//                }else {
-//                    list.add(message);
-//                }
-//                continue;
-//            }else{
-//                messageSocketServer.session.getAsyncRemote().sendText(message);
-//            }
-//        }
-//    }
-
     public static void sentToHardWare(Integer eid,String message) {
         MessageSocketServer messageSocketServer = webSocketHardwareMap.get(eid);
         if (messageSocketServer == null) {
@@ -99,19 +65,11 @@ public class MessageSocketServer {
         UserService userService = SpringUtil.getBean(UserServiceImpl.class);
         //如果是台灯进行连接
         if (token.endsWith("null")) {
-            this.eid = eid;
-//            EquipmentService equipmentService = SpringUtil.getBean(EquipmentServiceImpl.class);
-//            String encriptString = Md5Utils.MD5Encode(macAddress, "utf-8", false);
-//            String tempMacAddress = equipmentService.queryEquipmentById(eid).getMacAddress();
-            //检测传过来的mac地址是否正确
-//            if (tempMacAddress == null || !encriptString.endsWith(tempMacAddress)) {
-//                return;
-//            } else {
                 this.eid = eid;
                 this.uid = userService.getUserIdByEid(eid);
                 webSocketHardwareMap.put(eid, this);
                 //判断有没有该台灯的信息，如果有就发送
-                list = HardwareWaitToSent.get(id);//获取信息
+                list = HardwareWaitToSent.get(eid);//获取信息
 //            }
         }else{
             Integer id = JwtUtils.getId(token);
@@ -153,6 +111,10 @@ public class MessageSocketServer {
         Base64.Decoder decoder = Base64.getDecoder();
         Message m = null;
 
+        //对于python特殊处理！！！
+        message = message.replace('\'','\"');
+        message = message.replaceAll("None","null");
+
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             m = objectMapper.readValue(message, Message.class);
@@ -165,9 +127,9 @@ public class MessageSocketServer {
             Integer eid = equipmentMessage.getEquipmentId();
             String encryptString = Md5Utils.MD5Encode(equipmentMessage.getMacAddress(),"utf-8",false);
             //检测传过来的mac地址是否正确
-            if(!encryptString.endsWith(equipmentService.queryEquipmentById(eid).getMacAddress())) {
-                return;
-            }
+//            if(!encryptString.endsWith(equipmentService.queryEquipmentById(eid).getMacAddress())) {
+//                return;
+//            }
             Environment environment = new Environment(null,equipmentMessage.getBrightness(),equipmentMessage.getNoise(),equipmentMessage.getTemperature(),equipmentMessage.getHumidity(),equipmentMessage.getTime(),equipmentMessage.getEquipmentId());
             environmentService.insertEnvironment(environment);
             //从消息中读取Base64加密后的字符串
@@ -175,10 +137,16 @@ public class MessageSocketServer {
 //            byte[] bytes = decoder.decode(image);
 //            InputStream buffin = new ByteArrayInputStream(bytes,0,bytes.length);
 //            BufferedImage img = ImageIO.read(buffin);
-            SittingPostureInfo sittingPostureInfo = SittingPostureDetection.getSittingPosttureInfo(uid,image);
-            sittingPostureInfo.setUid(id);
-            sittingPostureInfo.setTime(equipmentMessage.getTime());
-//            sittingPostureService.insertPosture(sittingPostureInfo);
+            try {
+                SittingPostureInfo sittingPostureInfo = SittingPostureDetection.getSittingPosttureInfo(uid,image);
+                sittingPostureInfo.setUid(id);
+                sittingPostureInfo.setTime(equipmentMessage.getTime());
+                sittingPostureService.insertPosture(sittingPostureInfo);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+
         }
 
     }
@@ -186,36 +154,5 @@ public class MessageSocketServer {
     //发送消息
     public void sendMessage(Integer id,String message) throws IOException {
         this.session.getBasicRemote().sendText(message);
-    }
-}
-
-/**
- * 定义一条消息
- */
-@Setter
-@Getter
-@AllArgsConstructor
-class Message{
-    public static final String EQUIPMENT="equipment";
-    public static final String USER="user";
-
-    public Message() {
-
-    }
-
-    private String type;
-
-    private EquipmentMessage equipmentMessage;
-
-    private UserMessage userMessage;
-
-    public String toString(){
-        ObjectMapper objectMapper=new ObjectMapper();
-        try {
-            return objectMapper.writeValueAsString(this);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return "{}";
     }
 }
