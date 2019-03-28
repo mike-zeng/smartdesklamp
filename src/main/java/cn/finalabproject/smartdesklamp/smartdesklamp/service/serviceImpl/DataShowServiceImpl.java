@@ -160,6 +160,9 @@ public class DataShowServiceImpl implements DataShowService {
     @Override
     public SittingPostureViewObject getSittingPostureData(Integer uid, Date date) {
         SittingPostureStatistics data=dataStatisticsMapper.querySittingPostureStatistics(uid,date);
+        if (data==null){
+            data=new SittingPostureStatistics();
+        }
         Map<Integer,Integer> map=new HashMap<>();
         int[] book=new int[7];
         book[0]=data.getT0();

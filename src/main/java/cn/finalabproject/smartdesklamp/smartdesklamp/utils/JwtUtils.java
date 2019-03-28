@@ -52,6 +52,9 @@ public class JwtUtils {
         }catch (Exception e){
             //校验失败
         }
+        if (jwt==null){
+            return null;
+        }
         return jwt.getClaims();
     }
 

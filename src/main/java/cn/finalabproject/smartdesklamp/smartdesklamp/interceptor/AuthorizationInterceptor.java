@@ -49,6 +49,10 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
 
             //解密token
             Map<String, Claim> map= JwtUtils.VerifyToken(token);
+            if (map==null){
+                writeErrorInfo(response);
+                return false;
+            }
             String uuid=map.get("uuid").asString();
             String id=map.get("id").asString();
 
@@ -74,11 +78,20 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
             }
         }
         //否则提示token过期,要求重新登录
-        Writer writer=response.getWriter();
-        writer.write(RetJson.fail(-2,"token已过期,请重新登入").toString());
-        writer.flush();
+        writeErrorInfo(response);
         return false;
 
+    }
+
+    private void writeErrorInfo(HttpServletResponse response){
+        try {
+            Writer writer=response.getWriter();
+            writer.write(RetJson.fail(-2,"token已过期,请重新登入").toString());
+            writer.flush();
+        }catch (Exception e){
+
+        }
+        return;
     }
 
     public boolean isExclude(String uri){

@@ -13,7 +13,7 @@ public interface MusicMapper {
     @Delete("delete from music where id=#{id} and uid=#{uid}")
     public boolean deleteMusicById(@Param("id")Integer id,@Param("uid")Integer uid);
 
-    @Select("select * from music where uid=#{uid} or flag=0")
+    @Select("select * from music")
     @Results({
             @Result(column = "music_url",property = "musicUrl"),
             @Result(column = "music_name",property = "musicName")

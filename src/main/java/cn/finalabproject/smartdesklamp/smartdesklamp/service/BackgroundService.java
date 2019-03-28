@@ -16,7 +16,7 @@ public interface BackgroundService {
     public Background[] querySystemBackgrounds();
 
     //通过bid获取背景
-    public Background queryBackgroundByBid(Integer bid);
+    public Background queryBackgroundByBid(Integer uid,Integer bid);
 
     //查询除系统自带的其他所有背景
     public Background[] queryUserBackgrounds(Integer uid);
