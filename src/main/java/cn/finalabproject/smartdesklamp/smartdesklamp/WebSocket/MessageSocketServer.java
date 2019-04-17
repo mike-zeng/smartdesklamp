@@ -139,14 +139,11 @@ public class MessageSocketServer {
 //            BufferedImage img = ImageIO.read(buffin);
             try {
                 SittingPostureInfo sittingPostureInfo = SittingPostureDetection.getSittingPosttureInfo(uid,image);
-                sittingPostureInfo.setUid(id);
                 sittingPostureInfo.setTime(equipmentMessage.getTime());
                 sittingPostureService.insertPosture(sittingPostureInfo);
             }catch (Exception e){
                 e.printStackTrace();
             }
-
-
         }
 
     }

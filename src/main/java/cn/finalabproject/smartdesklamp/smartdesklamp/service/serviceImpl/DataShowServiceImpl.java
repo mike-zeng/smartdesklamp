@@ -38,46 +38,72 @@ public class DataShowServiceImpl implements DataShowService {
         //获取当前得分，从当前时间向前推60分钟
         SittingPostureInfo[] sittingPostureInfos=sittingPostureMapper.queryPostures(begin,end,uid);
         int[] book=new int[7];
-        int flag=-1;
+        double[] degree=new double[7];
+
+
         double score=0;
         double accuracy=0;
         int false_p=0,true_p=0;
 
+        SittingPostureInfo temp=null;
         for (int i=0;i<sittingPostureInfos.length;i++){
-            book[sittingPostureInfos[i].getStatus()]++;//统计次数
+            temp=sittingPostureInfos[i];
+            book[temp.getStatus()]++;//统计次数
+            degree[temp.getStatus()]+=temp.getDegree();
         }
+
+        //计算每种的平均分
+        for (int i = 0; i < 7; i++) {
+           degree[i]=degree[i]/book[i];
+        }
+        degree[0]=100;
+
 
         //获取统计数据
         Map<Integer,Integer> map=new HashMap<>();
         for (int i=0;i<7;i++){
             if (i==0){
-                true_p=book[i];
+                true_p=book[i];//正确
             }else {
-                false_p+=book[i];
+                false_p+=book[i];//错误
             }
             map.put(i,book[i]);
         }
-
+        //获取正确率
         int count=sittingPostureMapper.getCountByDate(new Date());
-
+        if (count!=0){
+            accuracy=((double)true_p)/(false_p+true_p);
+        }
         //计算分数,最简陋的一种方式,毫无科学依据
         if (count!=0){
-            score=100-(100*(book[1]+book[2])/count*0.7+(100*(book[3]+book[4])/count*0.8)+100*book[5]/count*0.9+100*book[6]/count*1);
+            for (int i=0;i<7;i++){
+                if (i==0){
+                    score+=accuracy*100;
+                }else {
+                    double k=0;
+                    if (i==1||i==2){
+                        k=0.5;
+                    }else if (i==3||i==4){
+                        k=0.4;
+                    }else if (i==5){
+                        k=0.3;
+                    }else {
+                        k=0.0;
+                    }
+                    double tscore=(100-degree[i])*k*book[i]/count;
+                    score+=tscore;
+                }
+            }
         }else{
             score=0;
         }
 
-        if (count!=0){
-            accuracy=((double)true_p)/(false_p+true_p);
-        }
-
         //填充数据
-        baseDataViewObject.setTotalTime(count*2);//总时长 ok
+        baseDataViewObject.setTotalTime(count*2);//总时长 o
         baseDataViewObject.setSittingPostureStatistics(map);//统计 ok
         baseDataViewObject.setScore(score);//得分
         baseDataViewObject.setGrade((int)score%20+1);//等级
         baseDataViewObject.setAccuracy(accuracy);//正确率
-
         //返回数据
         return baseDataViewObject;
     }
@@ -163,7 +189,7 @@ public class DataShowServiceImpl implements DataShowService {
         if (data==null){
             data=new SittingPostureStatistics();
         }
-        Map<Integer,Integer> map=new HashMap<>();
+        Map<Integer,Integer> map=null;
         int[] book=new int[7];
         book[0]=data.getT0();
         book[1]=data.getT1();
@@ -172,10 +198,16 @@ public class DataShowServiceImpl implements DataShowService {
         book[4]=data.getT4();
         book[5]=data.getT5();
         book[6]=data.getT6();
-
         map= CalculateUtil.getPosturesMap(book);
         double accuracy=CalculateUtil.getAccuracy(book);
-        double score=CalculateUtil.calculateScoreByPostures(book);
+        PostureScoreStatistics[] temps=dataStatisticsMapper.queryPostureScoreStatistics(uid,date);
+        double score=0;
+        for (int i = 0; i < temps.length; i++) {
+            score+=temps[i].getScore();
+        }
+        if (temps.length!=0){
+            score=score/temps.length;
+        }
         int grade=CalculateUtil.getGrade(score);
         SittingPostureViewObject vo=new SittingPostureViewObject(map,accuracy,score,grade);
         return vo;

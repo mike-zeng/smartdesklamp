@@ -31,7 +31,7 @@ public class SittingPostureServiceImpl implements SittingPostureService {
     }
 
     @Override
-    public SittingPostureInfo[] queryPostures(Timestamp beginTime, Timestamp endTime,Integer uid) {
+    public SittingPostureInfo[] queryPostures(Timestamp beginTime,Timestamp endTime,Integer uid) {
         return sittingPostureMapper.queryPostures(beginTime,endTime,uid);
     }
     @Override

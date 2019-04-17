@@ -26,9 +26,11 @@ public class SittingPostureDetection {
 
     public static SittingPostureInfo getSittingPosttureInfo(Integer uid,String image){
         Spd spd = Spd.getInstance(config1,config2);
-
         SittingPosition sittingPosition = spd.getSittingPosition(uid,image);
-
-        return new SittingPostureInfo(sittingPosition.getId(),sittingPosition.getUid(),sittingPosition.getStatus(),100,new Timestamp(new Date().getTime()));
+        SittingPostureInfo sittingPostureInfo=new SittingPostureInfo();
+        sittingPostureInfo.setUid(uid);
+        sittingPostureInfo.setStatus(sittingPosition.getStatus());
+        sittingPostureInfo.setDegree(sittingPosition.getDegree());
+        return sittingPostureInfo;
     }
 }
