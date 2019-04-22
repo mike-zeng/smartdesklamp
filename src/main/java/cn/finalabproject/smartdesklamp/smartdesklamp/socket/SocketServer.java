@@ -33,7 +33,7 @@ public class SocketServer
         Socket client = null;
         try {
             socketMap = new HashMap<>();
-            ServerSocket serverSocket = new ServerSocket(8888);
+            ServerSocket serverSocket = new ServerSocket(6666);
             System.out.println("你的ip为" + serverSocket.getInetAddress().getHostAddress());
             ExecutorService executorService = Executors.newSingleThreadExecutor();
             while (true) {
