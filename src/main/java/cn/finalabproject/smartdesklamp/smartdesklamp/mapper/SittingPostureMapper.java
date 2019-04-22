@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Mapper
 public interface SittingPostureMapper {
-    @Insert({"insert into sitting_posture(id,uid,status,time) values(#{id},#{uid},#{status},#{time})"})
+    @Insert({"insert into sitting_posture(uid,status,degree,time) values(#{uid},#{status},#{degree},#{time})"})
     @Options(useGeneratedKeys = true,keyProperty = "id",keyColumn = "id")
     public int insertPosture(SittingPostureInfo sittingPostureInfo);
 

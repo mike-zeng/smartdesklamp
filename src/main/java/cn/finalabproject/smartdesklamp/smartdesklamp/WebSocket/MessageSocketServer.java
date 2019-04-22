@@ -146,8 +146,6 @@ public class MessageSocketServer {
             }catch (Exception e){
                 e.printStackTrace();
             }
-
-
         }
 
     }
@@ -156,4 +154,5 @@ public class MessageSocketServer {
     public void sendMessage(Integer id,String message) throws IOException {
         this.session.getBasicRemote().sendText(message);
     }
+
 }

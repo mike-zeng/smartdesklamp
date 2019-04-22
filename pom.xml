@@ -108,6 +108,19 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
             <version>1.3.5.RELEASE</version>
         </dependency>
+<!--        百度ai-->
+        <!--baidu人脸检测接口-->
+        <dependency>
+            <groupId>com.baidu.aip</groupId>
+            <artifactId>java-sdk</artifactId>
+            <version>4.3.2</version>
+        </dependency>
+        <!--baidu人体分析接口-->
+        <dependency>
+            <groupId>com.baidu.aip</groupId>
+            <artifactId>java-sdk</artifactId>
+            <version>4.8.0</version>
+        </dependency>
     </dependencies>
 
     <build>

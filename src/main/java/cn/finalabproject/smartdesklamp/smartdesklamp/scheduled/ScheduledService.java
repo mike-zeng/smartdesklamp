@@ -47,35 +47,26 @@ public class ScheduledService {
             System.out.println("成功写入数据");
         }
     }
-
+    //根据坐姿的方差和平均值判断
     public  FocusStatistics getFocusStatistics(Integer uid){
         FocusStatistics focusStatistics=new FocusStatistics();
         //获取数据。。。
         SittingPostureInfo[] list=sittingPostureService.getPosturesByDate(new Date(),uid);
-        int[] book=new int[7];
-        for (SittingPostureInfo s:list){
-            book[s.getStatus()]++;
-        }
-        Double score=CalculateUtil.calculateFoucsScoreByPostures(book);
+        Double score=CalculateUtil.calculateFoucsScoreByPostures(list);
         focusStatistics.setFocusScore(score);
         focusStatistics.setUid(uid);
         return focusStatistics;
     }
-
+    //获取坐姿分数 ok
     public  PostureScoreStatistics getPostureScoreStatistics(int uid){
         PostureScoreStatistics postureScoreStatistics=new PostureScoreStatistics();
-        //获取数据。。。
         SittingPostureInfo[] list=sittingPostureService.getPosturesByDate(new Date(),uid);
-        int[] book=new int[7];
-        for (SittingPostureInfo s:list){
-            book[s.getStatus()]++;
-        }
-        double score=CalculateUtil.calculateScoreByPostures(book);
+        double score=CalculateUtil.calculateScoreByPostures(list);
         postureScoreStatistics.setScore(score);
         postureScoreStatistics.setUid(uid);
         return postureScoreStatistics;
     }
-
+    //获取学习时间长。ok
     public  StudyTimeStatistics getStudyTimeStatistics(int uid){
         StudyTimeStatistics studyTimeStatistics=new StudyTimeStatistics();
         int count=sittingPostureService.getCountByDate(new Date());
@@ -83,7 +74,7 @@ public class ScheduledService {
         studyTimeStatistics.setUid(uid);
         return studyTimeStatistics;
     }
-
+    //获取坐姿数据，每一天，各种数据的统计 ok
     public SittingPostureStatistics getSittingPostureStatistics(int uid){
         SittingPostureStatistics sittingPostureStatistics=new SittingPostureStatistics();
         //获取数据。。。

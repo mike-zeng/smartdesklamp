@@ -6,6 +6,7 @@ import cn.finalabproject.smartdesklamp.smartdesklamp.model.User;
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.UserInfo;
 import cn.finalabproject.smartdesklamp.smartdesklamp.service.*;
 import cn.finalabproject.smartdesklamp.smartdesklamp.vo.*;
+import com.sun.org.apache.bcel.internal.generic.DADD;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -94,6 +95,17 @@ public class DataController {
         Integer uid=user.getId();
         FocusViewObject focusViewObject=dataShowService.getFocusData(uid,date);
         return RetJson.succcess("focusData",focusViewObject);
+    }
+
+    //获取日报
+    @RequestMapping("/getDaily")
+    public RetJson getDaily(){
+        //判断当前时间
+        Date date=new Date();
+        if (date.getHours()<19){
+            return RetJson.fail(-1,"还没有到时间");
+        }
+        return RetJson.succcess(null);
     }
 
 }

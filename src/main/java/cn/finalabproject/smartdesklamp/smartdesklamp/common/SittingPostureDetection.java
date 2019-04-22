@@ -1,11 +1,9 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.common;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.SittingPostureInfo;
-import model.SittingPosition;
-import spd.Spd;
+import cn.finalabproject.smartdesklamp.smartdesklamp.spd.model.SittingPosition;
+import cn.finalabproject.smartdesklamp.smartdesklamp.spd.spd.Spd;
 
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -26,9 +24,11 @@ public class SittingPostureDetection {
 
     public static SittingPostureInfo getSittingPosttureInfo(Integer uid,String image){
         Spd spd = Spd.getInstance(config1,config2);
-
         SittingPosition sittingPosition = spd.getSittingPosition(uid,image);
-
-        return new SittingPostureInfo(sittingPosition.getId(),sittingPosition.getUid(),sittingPosition.getStatus(),100,new Timestamp(new Date().getTime()));
+        SittingPostureInfo sittingPostureInfo=new SittingPostureInfo();
+        sittingPostureInfo.setUid(uid);
+        sittingPostureInfo.setStatus(sittingPosition.getStatus());
+        sittingPostureInfo.setDegree(sittingPosition.getDegree());
+        return sittingPostureInfo;
     }
 }
