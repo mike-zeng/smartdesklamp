@@ -22,6 +22,7 @@ public class Message{
 
     private UserMessage userMessage;
 
+
     public String toString(){
         ObjectMapper objectMapper=new ObjectMapper();
         try {

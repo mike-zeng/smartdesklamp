@@ -109,11 +109,11 @@ public class MessageSocketServer {
         EnvironmentService environmentService = SpringUtil.getBean(EnvironmentServiceImpl.class);
         SittingPostureService sittingPostureService = SpringUtil.getBean(SittingPostureServiceImpl.class);
         Base64.Decoder decoder = Base64.getDecoder();
-        Message m = null;
+        Message m;
 
         //对于python特殊处理！！！
-        message = message.replace('\'','\"');
         message = message.replaceAll("None","null");
+        message = message.replace('\'','\"');
 
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -124,8 +124,9 @@ public class MessageSocketServer {
         }
         if(m.getType().equals(Message.EQUIPMENT)){
             EquipmentMessage equipmentMessage = m.getEquipmentMessage();
-            Integer eid = equipmentMessage.getEquipmentId();
             String encryptString = Md5Utils.MD5Encode(equipmentMessage.getMacAddress(),"utf-8",false);
+            Integer eid = equipmentMessage.getEquipmentId();
+
             //检测传过来的mac地址是否正确
 //            if(!encryptString.endsWith(equipmentService.queryEquipmentById(eid).getMacAddress())) {
 //                return;
@@ -139,8 +140,8 @@ public class MessageSocketServer {
 //            BufferedImage img = ImageIO.read(buffin);
             try {
                 SittingPostureInfo sittingPostureInfo = SittingPostureDetection.getSittingPosttureInfo(uid,image);
-                sittingPostureInfo.setUid(id);
                 sittingPostureInfo.setTime(equipmentMessage.getTime());
+                sittingPostureInfo.setUid(id);
                 sittingPostureService.insertPosture(sittingPostureInfo);
             }catch (Exception e){
                 e.printStackTrace();
