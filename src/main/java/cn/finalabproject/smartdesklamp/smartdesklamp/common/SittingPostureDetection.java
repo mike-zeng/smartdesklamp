@@ -1,11 +1,9 @@
 package cn.finalabproject.smartdesklamp.smartdesklamp.common;
 
 import cn.finalabproject.smartdesklamp.smartdesklamp.model.SittingPostureInfo;
-import model.SittingPosition;
-import spd.Spd;
+import cn.finalabproject.smartdesklamp.smartdesklamp.spd.model.SittingPosition;
+import cn.finalabproject.smartdesklamp.smartdesklamp.spd.spd.Spd;
 
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.HashMap;
 
 /**

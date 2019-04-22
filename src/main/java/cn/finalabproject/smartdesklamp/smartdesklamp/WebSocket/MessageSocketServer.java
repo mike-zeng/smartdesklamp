@@ -152,4 +152,5 @@ public class MessageSocketServer {
     public void sendMessage(Integer id,String message) throws IOException {
         this.session.getBasicRemote().sendText(message);
     }
+
 }

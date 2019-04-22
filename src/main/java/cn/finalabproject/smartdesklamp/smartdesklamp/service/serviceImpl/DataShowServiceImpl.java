@@ -35,7 +35,7 @@ public class DataShowServiceImpl implements DataShowService {
         Timestamp begin=new Timestamp(date.getTime()-1000*60*60);
         Timestamp end=new Timestamp(date.getTime());
 
-        //获取当前得分，从当前时间向前推60分钟
+
         SittingPostureInfo[] sittingPostureInfos=sittingPostureMapper.queryPostures(begin,end,uid);
         int[] book=new int[7];
         double[] degree=new double[7];
@@ -52,9 +52,10 @@ public class DataShowServiceImpl implements DataShowService {
             degree[temp.getStatus()]+=temp.getDegree();
         }
 
-        //计算每种的平均分
         for (int i = 0; i < 7; i++) {
-           degree[i]=degree[i]/book[i];
+           if (book[i]!=0) {
+               degree[i] = degree[i] / book[i];
+           }
         }
         degree[0]=100;
 
